@@ -191,7 +191,7 @@
         id="loginInput"
         class="input"
         type="password"
-        placeholder="Enter 4 digit PIN"
+        placeholder="Enter PIN"
         autocomplete="off"
         inputmode="numeric"
         maxlength="4"
@@ -200,30 +200,42 @@
       >
     </section>
 
-    <section id="facilityList" class="facility-list"></section>
+    <section id="facilityList" class="facility-list">
+      <button class="facility-btn" disabled>
+        Loading
+        <span class="facility-name">Please wait</span>
+      </button>
+    </section>
 
     <div class="version">
-      Updated: 2026-05-23 11:45 AM • MAIN Dashboard/index.html
+      Updated: 2026-05-23 12:05 PM • MAIN Dashboard/index.html
     </div>
   </main>
 
   <script>
     /* =========================
-       04 - STORAGE
+       04 - GOOGLE SHEET SETTINGS
     ========================== */
 
-    const STORAGE_KEY = "facilityLayoutFacilitiesV2";
+    const SHEET_ID = "1NgaIHQopiTuTuJpKgO05gxDddRaMwg_7HusVDarcfq0";
 
-    const MAIN_DASHBOARD_PIN = "0000";
+    const FACILITY_INFO_CSV_URL =
+      "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:csv&sheet=Facility_Info";
+
+    const EMPLOYEES_CSV_URL =
+      "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:csv&sheet=Employees%20";
+
+    const LOCAL_FACILITY_STORAGE_KEY = "facilityLayoutLocalFacilitiesV1";
 
     let facilities = [];
+    let employees = [];
 
     /* =========================
        05 - STARTUP
     ========================== */
 
-    document.addEventListener("DOMContentLoaded", () => {
-      loadFacilities();
+    document.addEventListener("DOMContentLoaded", async () => {
+      await loadAppData();
       renderFacilityButtons();
 
       document.getElementById("newFacilityInput").addEventListener("keydown", event => {
@@ -234,26 +246,84 @@
     });
 
     /* =========================
-       06 - LOAD AND SAVE
+       06 - LOAD DATA
     ========================== */
 
-    function loadFacilities() {
-      const saved = localStorage.getItem(STORAGE_KEY);
+    async function loadAppData() {
+      await Promise.all([
+        loadFacilitiesFromSheet(),
+        loadEmployeesFromSheet()
+      ]);
 
-      if (!saved) {
-        facilities = [];
-        return;
-      }
+      loadLocalFacilities();
+    }
 
+    async function loadFacilitiesFromSheet() {
       try {
-        facilities = JSON.parse(saved);
+        const response = await fetch(FACILITY_INFO_CSV_URL);
+        const csvText = await response.text();
+
+        facilities = parseCsv(csvText)
+          .filter(row => normalize(row.facilityId) && normalize(row.facilityName))
+          .map(row => {
+            const initials = makeInitials(row.facilityName);
+
+            return {
+              id: normalize(row.facilityId),
+              name: normalize(row.facilityName),
+              initials: initials,
+              folder: initials,
+              source: "sheet"
+            };
+          });
       } catch (error) {
+        console.error(error);
         facilities = [];
+        showStatus("Could not load Facility_Info sheet.");
       }
     }
 
-    function saveFacilities() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(facilities));
+    async function loadEmployeesFromSheet() {
+      try {
+        const response = await fetch(EMPLOYEES_CSV_URL);
+        const csvText = await response.text();
+
+        employees = parseCsv(csvText).filter(row => {
+          return normalize(row.employeeName) && normalize(row.loginPin);
+        });
+      } catch (error) {
+        console.error(error);
+        employees = [];
+        showStatus("Could not load Employees sheet.");
+      }
+    }
+
+    function loadLocalFacilities() {
+      const saved = localStorage.getItem(LOCAL_FACILITY_STORAGE_KEY);
+
+      if (!saved) return;
+
+      try {
+        const localFacilities = JSON.parse(saved);
+
+        localFacilities.forEach(localFacility => {
+          const exists = facilities.some(item => {
+            return item.initials.toLowerCase() === localFacility.initials.toLowerCase() ||
+                   item.name.toLowerCase() === localFacility.name.toLowerCase();
+          });
+
+          if (!exists) {
+            facilities.push(localFacility);
+          }
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    function saveLocalFacilities() {
+      const localFacilities = facilities.filter(facility => facility.source === "local");
+      localStorage.setItem(LOCAL_FACILITY_STORAGE_KEY, JSON.stringify(localFacilities));
     }
 
     /* =========================
@@ -285,10 +355,11 @@
         id: initials,
         name: facilityName,
         initials: initials,
-        folder: initials
+        folder: initials,
+        source: "local"
       });
 
-      saveFacilities();
+      saveLocalFacilities();
       input.value = "";
       renderFacilityButtons();
       showStatus("Facility saved.");
@@ -350,42 +421,69 @@
     }
 
     /* =========================
-       09 - PIN AND NAVIGATION
+       09 - PIN CHECK
     ========================== */
 
     function getPin() {
       return document.getElementById("loginInput").value.trim();
     }
 
-    function requirePin() {
+    function getLoggedInEmployee() {
       const pin = getPin();
 
       if (!pin) {
         showStatus("Enter PIN first.");
-        return false;
+        return null;
       }
 
-      if (pin.length !== 4) {
-        showStatus("PIN must be 4 digits.");
-        return false;
+      const employee = employees.find(row => {
+        return normalizePin(row.loginPin) === normalizePin(pin) &&
+               yesNo(row.active) !== "no";
+      });
+
+      if (!employee) {
+        showStatus("PIN not found or inactive.");
+        return null;
       }
 
-      return true;
+      return employee;
     }
 
-    function openMainDashboardUsers() {
-      if (!requirePin()) return;
+    function normalizePin(value) {
+      return String(value || "")
+        .replace(/\.0$/, "")
+        .replace(/[^0-9]/g, "");
+    }
 
-      if (getPin() !== MAIN_DASHBOARD_PIN) {
-        showStatus("Wrong PIN.");
+    /* =========================
+       10 - NAVIGATION
+    ========================== */
+
+    function openMainDashboardUsers() {
+      const employee = getLoggedInEmployee();
+
+      if (!employee) return;
+
+      const canOpen =
+        yesNo(employee.adminAccess) === "yes" ||
+        yesNo(employee.viewEmployees) === "yes" ||
+        yesNo(employee.viewMainDashboard) === "yes";
+
+      if (!canOpen) {
+        showStatus("No access to MAIN Dashboard users.");
         return;
       }
+
+      sessionStorage.setItem("loggedInEmployeeName", normalize(employee.employeeName));
+      sessionStorage.setItem("loggedInEmployeeRole", normalize(employee.role));
 
       window.location.href = "main-dashboard-employees.html";
     }
 
     function openFacility(index) {
-      if (!requirePin()) return;
+      const employee = getLoggedInEmployee();
+
+      if (!employee) return;
 
       const facility = facilities[index];
 
@@ -394,16 +492,102 @@
         return;
       }
 
+      if (yesNo(employee.viewFacilityDashboard) !== "yes" && yesNo(employee.adminAccess) !== "yes") {
+        showStatus("No access to facility dashboard.");
+        return;
+      }
+
+      if (!employeeCanAccessFacility(employee, facility)) {
+        showStatus("No access to this facility.");
+        return;
+      }
+
+      sessionStorage.setItem("loggedInEmployeeName", normalize(employee.employeeName));
+      sessionStorage.setItem("loggedInEmployeeRole", normalize(employee.role));
+      sessionStorage.setItem("selectedFacilityId", facility.id);
+      sessionStorage.setItem("selectedFacilityName", facility.name);
+
       const url =
-        "../" + encodeURIComponent(facility.folder) + "/index.html" +
+        "../" + encodeURIComponent(facility.folder) + "/facilityinformation" + encodeURIComponent(facility.folder) + ".html" +
         "?facilityId=" + encodeURIComponent(facility.id) +
         "&facilityName=" + encodeURIComponent(facility.name);
 
       window.location.href = url;
     }
 
+    function employeeCanAccessFacility(employee, facility) {
+      const allowed = normalize(employee.allowedFacilities).toUpperCase();
+
+      if (!allowed || allowed === "ALL") return true;
+
+      const parts = allowed
+        .split(/[,\|;/]+/)
+        .map(item => item.trim().toUpperCase())
+        .filter(Boolean);
+
+      return parts.includes(facility.initials.toUpperCase()) ||
+             parts.includes(facility.id.toUpperCase()) ||
+             parts.includes(facility.name.toUpperCase());
+    }
+
     /* =========================
-       10 - STATUS
+       11 - CSV PARSER
+    ========================== */
+
+    function parseCsv(csvText) {
+      const cleanText = String(csvText || "").trim();
+
+      if (!cleanText) return [];
+
+      const lines = cleanText.split(/\r?\n/);
+
+      if (lines.length < 2) return [];
+
+      const headers = splitCsvLine(lines[0]).map(header => header.trim()).filter(Boolean);
+      const rows = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const values = splitCsvLine(lines[i]);
+        const row = {};
+
+        headers.forEach((header, index) => {
+          row[header] = values[index] ? values[index].trim() : "";
+        });
+
+        rows.push(row);
+      }
+
+      return rows;
+    }
+
+    function splitCsvLine(line) {
+      const result = [];
+      let current = "";
+      let insideQuotes = false;
+
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        const nextChar = line[i + 1];
+
+        if (char === '"' && insideQuotes && nextChar === '"') {
+          current += '"';
+          i++;
+        } else if (char === '"') {
+          insideQuotes = !insideQuotes;
+        } else if (char === "," && !insideQuotes) {
+          result.push(current);
+          current = "";
+        } else {
+          current += char;
+        }
+      }
+
+      result.push(current);
+      return result;
+    }
+
+    /* =========================
+       12 - STATUS AND HELPERS
     ========================== */
 
     function showStatus(message) {
@@ -413,12 +597,16 @@
 
       setTimeout(() => {
         statusBox.classList.remove("active");
-      }, 2500);
+      }, 3000);
     }
 
-    /* =========================
-       11 - HELPERS
-    ========================== */
+    function normalize(value) {
+      return String(value || "").trim();
+    }
+
+    function yesNo(value) {
+      return String(value || "").trim().toLowerCase();
+    }
 
     function escapeHtml(value) {
       return String(value || "")
