@@ -1,740 +1,250 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- =========================
-       01 - HEAD
-  ========================== -->
-
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>MAIN Dashboard</title>
-
-  <style>
-    /* =========================
-       02 - GLOBAL STYLE
-    ========================== */
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f2f2f2;
-      min-height: 100vh;
-      padding: 10px;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-    }
-
-    .app {
-      width: 100%;
-      max-width: 430px;
-      background: #ffffff;
-      border-radius: 18px;
-      padding: 14px;
-      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
-    }
-
-    .title {
-      font-size: 23px;
-      font-weight: 900;
-      margin: 0;
-      text-align: center;
-      line-height: 1.1;
-    }
-
-    .tag {
-      text-align: center;
-      font-size: 12px;
-      font-weight: 700;
-      color: #555;
-      margin-top: 5px;
-      margin-bottom: 14px;
-    }
-
-    .card-box {
-      border: 2px dashed #d2d2d2;
-      border-radius: 16px;
-      background: #fafafa;
-      padding: 12px;
-      margin-bottom: 12px;
-    }
-
-    .box-title {
-      font-size: 17px;
-      font-weight: 900;
-      text-align: center;
-      margin-bottom: 10px;
-      color: #111;
-    }
-
-    .input {
-      width: 100%;
-      border: 1px solid #bbb;
-      border-radius: 12px;
-      padding: 12px;
-      font-size: 16px;
-      font-weight: 700;
-      outline: none;
-      margin-bottom: 8px;
-      background: white;
-    }
-
-    .facility-list {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .facility-btn {
-      border: none;
-      background: #f4c542;
-      color: #111;
-      border-radius: 14px;
-      padding: 16px 10px;
-      font-size: 17px;
-      font-weight: 900;
-      cursor: pointer;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.18);
-      text-align: center;
-      min-height: 74px;
-    }
-
-    .facility-btn.black-btn {
-      background: #222;
-      color: #ffffff;
-    }
-
-    .facility-name {
-      display: block;
-      font-size: 10px;
-      font-weight: 800;
-      margin-top: 5px;
-      color: #333;
-      line-height: 1.1;
-    }
-
-    .black-btn .facility-name {
-      color: #ffffff;
-    }
-
-    .status {
-      display: none;
-      margin-top: 8px;
-      padding: 10px;
-      border-radius: 12px;
-      background: #eeeeee;
-      font-size: 13px;
-      font-weight: 800;
-      text-align: center;
-      color: #333;
-    }
-
-    .status.active {
-      display: block;
-    }
-
-    .modal-backdrop {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.45);
-      padding: 16px;
-      align-items: center;
-      justify-content: center;
-      z-index: 99;
-    }
-
-    .modal-backdrop.active {
-      display: flex;
-    }
-
-    .modal-card {
-      width: 100%;
-      max-width: 390px;
-      background: white;
-      border-radius: 18px;
-      padding: 14px;
-      box-shadow: 0 5px 22px rgba(0, 0, 0, 0.28);
-    }
-
-    .modal-title {
-      font-size: 20px;
-      font-weight: 900;
-      text-align: center;
-      margin-bottom: 12px;
-    }
-
-    .modal-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 4px;
-    }
-
-    .modal-btn {
-      border: none;
-      border-radius: 12px;
-      padding: 12px;
-      font-size: 16px;
-      font-weight: 900;
-      cursor: pointer;
-    }
-
-    .save-btn {
-      background: #f4c542;
-      color: #111;
-    }
-
-    .cancel-btn {
-      background: #222;
-      color: #ffffff;
-    }
-
-    .version {
-      margin-top: 14px;
-      text-align: center;
-      font-size: 11px;
-      color: #777;
-    }
-
-    .facility-btn:active,
-    .modal-btn:active {
-      transform: scale(0.98);
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAIN Dashboard</title>
+<style>
+body {margin:0;font-family:Arial,sans-serif;background:#f2f2f2;min-height:100vh;padding:10px;display:flex;justify-content:center;align-items:flex-start;}
+.app {width:100%;max-width:430px;background:#ffffff;border-radius:18px;padding:14px;box-shadow:0 4px 18px rgba(0,0,0,0.18);}
+.title {font-size:23px;font-weight:900;margin:0;text-align:center;line-height:1.1;}
+.tag {text-align:center;font-size:12px;font-weight:700;color:#555;margin-top:5px;margin-bottom:14px;}
+.card-box {border:2px dashed #d2d2d2;border-radius:16px;background:#fafafa;padding:12px;margin-bottom:12px;}
+.box-title {font-size:17px;font-weight:900;text-align:center;margin-bottom:10px;color:#111;}
+.input {width:100%;border:1px solid #bbb;border-radius:12px;padding:12px;font-size:16px;font-weight:700;outline:none;margin-bottom:8px;background:white;}
+.facility-list {display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px;}
+.facility-btn {border:none;background:#f4c542;color:#111;border-radius:14px;padding:16px 10px;font-size:17px;font-weight:900;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,0.18);text-align:center;min-height:74px;}
+.facility-btn.black-btn {background:#222;color:#fff;}
+.facility-name {display:block;font-size:10px;font-weight:800;margin-top:5px;color:#333;line-height:1.1;}
+.black-btn .facility-name {color:#fff;}
+.status {display:none;margin-top:8px;padding:10px;border-radius:12px;background:#eeeeee;font-size:13px;font-weight:800;text-align:center;color:#333;}
+.status.active {display:block;}
+.modal-backdrop {display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);padding:16px;align-items:center;justify-content:center;z-index:99;}
+.modal-backdrop.active {display:flex;}
+.modal-card {width:100%;max-width:390px;background:white;border-radius:18px;padding:14px;box-shadow:0 5px 22px rgba(0,0,0,0.28);}
+.modal-title {font-size:20px;font-weight:900;text-align:center;margin-bottom:12px;}
+.modal-actions {display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;}
+.modal-btn {border:none;border-radius:12px;padding:12px;font-size:16px;font-weight:900;cursor:pointer;}
+.save-btn {background:#f4c542;color:#111;}
+.cancel-btn {background:#222;color:#fff;}
+.version {margin-top:14px;text-align:center;font-size:11px;color:#777;}
+.facility-btn:active,.modal-btn:active {transform:scale(0.98);}
+</style>
 </head>
-
 <body>
-  <!-- =========================
-       03 - APP SHELL
-  ========================== -->
-
-  <main class="app">
-    <h1 class="title">MAIN Dashboard</h1>
-    <div class="tag">Facility Layout App</div>
-
-    <section class="card-box">
-      <div class="box-title">Enter PIN</div>
-
-      <input
-        id="loginInput"
-        name="mainDashboardPinField"
-        class="input"
-        type="password"
-        placeholder="Enter PIN"
-        autocomplete="new-password"
-        inputmode="numeric"
-        maxlength="4"
-        pattern="[0-9]*"
-        value=""
-        oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4);"
-      >
-
-      <div id="statusBox" class="status"></div>
-    </section>
-
-    <section id="facilityList" class="facility-list">
-      <button class="facility-btn" disabled>
-        Loading
-        <span class="facility-name">Please wait</span>
-      </button>
-    </section>
-
-    <div class="version">
-      Updated: 2026-05-23 02:15 PM • MAIN Dashboard/index.html
-    </div>
-  </main>
-
-  <!-- =========================
-       04 - NEW FACILITY POPUP
-  ========================== -->
-
-  <div id="newFacilityModal" class="modal-backdrop">
-    <div class="modal-card">
-      <div class="modal-title">Enter New Facility</div>
-
-      <input
-        id="newFacilityInput"
-        name="newFacilityNameField"
-        class="input"
-        type="text"
-        placeholder="Enter new facility name"
-        autocomplete="off"
-        value=""
-      >
-
-      <div class="modal-actions">
-        <button class="modal-btn cancel-btn" onclick="closeNewFacilityPopup()">Cancel</button>
-        <button class="modal-btn save-btn" onclick="saveNewFacility()">Save</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    /* =========================
-       05 - GOOGLE SHEET SETTINGS
-    ========================== */
-
-    const SHEET_ID = "1NgaIHQopiTuTuJpKgO05gxDddRaMwg_7HusVDarcfq0";
-
-    const FACILITY_INFO_CSV_URL =
-      "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:csv&sheet=Facility_Info";
-
-    const EMPLOYEES_CSV_URL =
-      "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:csv&sheet=Employees";
-
-    const LOCAL_FACILITY_STORAGE_KEY = "facilityLayoutLocalFacilitiesV3";
-
-    let facilities = [];
-    let employees = [];
-
-    /* =========================
-       06 - STARTUP
-    ========================== */
-
-    document.addEventListener("DOMContentLoaded", async () => {
-      clearInputsOnLoad();
-      renderFacilityButtons();
-
-      document.getElementById("newFacilityInput").addEventListener("keydown", event => {
-        if (event.key === "Enter") {
-          saveNewFacility();
-        }
-      });
-
-      await loadAppData();
-      renderFacilityButtons();
-      clearInputsOnLoad();
-    });
-
-    function clearInputsOnLoad() {
-      const pinInput = document.getElementById("loginInput");
-      const facilityInput = document.getElementById("newFacilityInput");
-
-      if (pinInput) {
-        pinInput.value = "";
-        pinInput.placeholder = "Enter PIN";
-      }
-
-      if (facilityInput) {
-        facilityInput.value = "";
-        facilityInput.placeholder = "Enter new facility name";
-      }
-    }
-
-    /* =========================
-       07 - LOAD DATA
-    ========================== */
-
-    async function loadAppData() {
-      await Promise.all([
-        loadFacilitiesFromSheet(),
-        loadEmployeesFromSheet()
-      ]);
-
-      loadLocalFacilities();
-    }
-
-    async function loadFacilitiesFromSheet() {
-      try {
-        const response = await fetch(FACILITY_INFO_CSV_URL);
-        const csvText = await response.text();
-
-        facilities = parseCsv(csvText)
-          .filter(row => normalize(row.facilityId) && normalize(row.facilityName))
-          .map(row => {
-            const initials = makeInitials(row.facilityName);
-
-            return {
-              id: normalize(row.facilityId),
-              name: normalize(row.facilityName),
-              initials: initials,
-              folder: initials,
-              source: "sheet"
-            };
-          });
-      } catch (error) {
-        console.error(error);
-        facilities = [];
-        showStatus("Could not load Facility_Info sheet.");
-      }
-    }
-
-    async function loadEmployeesFromSheet() {
-      try {
-        const response = await fetch(EMPLOYEES_CSV_URL);
-        const csvText = await response.text();
-
-        employees = parseCsv(csvText).filter(row => {
-          return normalize(row.employeeName) && normalizePin(row.loginPin);
-        });
-      } catch (error) {
-        console.error(error);
-        employees = [];
-        showStatus("Could not load Employees sheet.");
-      }
-    }
-
-    function loadLocalFacilities() {
-      const saved = localStorage.getItem(LOCAL_FACILITY_STORAGE_KEY);
-
-      if (!saved) return;
-
-      try {
-        const localFacilities = JSON.parse(saved);
-
-        localFacilities.forEach(localFacility => {
-          const exists = facilities.some(item => {
-            return item.initials.toLowerCase() === localFacility.initials.toLowerCase() ||
-                   item.name.toLowerCase() === localFacility.name.toLowerCase();
-          });
-
-          if (!exists) {
-            facilities.push(localFacility);
-          }
-        });
-      } catch (error) {
-        console.error(error);
-      }
-    }
-
-    function saveLocalFacilities() {
-      const localFacilities = facilities.filter(facility => facility.source === "local");
-      localStorage.setItem(LOCAL_FACILITY_STORAGE_KEY, JSON.stringify(localFacilities));
-    }
-
-    /* =========================
-       08 - NEW FACILITY POPUP
-    ========================== */
-
-    function openNewFacilityPopup() {
-      const modal = document.getElementById("newFacilityModal");
-      const input = document.getElementById("newFacilityInput");
-
-      input.value = "";
-      modal.classList.add("active");
-
-      setTimeout(() => {
-        input.focus();
-      }, 100);
-    }
-
-    function closeNewFacilityPopup() {
-      document.getElementById("newFacilityModal").classList.remove("active");
-      document.getElementById("newFacilityInput").value = "";
-    }
-
-    function saveNewFacility() {
-      const input = document.getElementById("newFacilityInput");
-      const facilityName = input.value.trim();
-
-      if (!facilityName) {
-        showStatus("Enter a facility name first.");
-        return;
-      }
-
-      const initials = makeInitials(facilityName);
-
-      const alreadyExists = facilities.some(facility => {
-        return facility.name.toLowerCase() === facilityName.toLowerCase() ||
-               facility.initials.toLowerCase() === initials.toLowerCase();
-      });
-
-      if (alreadyExists || initials === "MD") {
-        showStatus("That facility already exists.");
-        return;
-      }
-
-      facilities.push({
-        id: initials,
-        name: facilityName,
-        initials: initials,
-        folder: initials,
-        source: "local"
-      });
-
-      saveLocalFacilities();
-      renderFacilityButtons();
-      closeNewFacilityPopup();
-      showStatus("Facility saved.");
-    }
-
-    function makeInitials(name) {
-      const cleanName = String(name || "").trim();
-
-      if (!cleanName) return "NEW";
-
-      if (cleanName.includes("/")) {
-        const beforeSlash = cleanName.split("/")[0].trim();
-        const cleaned = beforeSlash.replace(/[^a-zA-Z0-9]/g, "");
-        return cleaned.substring(0, 4).toUpperCase() || "NEW";
-      }
-
-      const words = cleanName
-        .replace(/[^a-zA-Z0-9 ]/g, " ")
-        .split(" ")
-        .filter(Boolean);
-
-      if (!words.length) return "NEW";
-
-      if (words.length === 1) {
-        return words[0].substring(0, 4).toUpperCase();
-      }
-
-      return words
-        .map(word => word[0])
-        .join("")
-        .substring(0, 4)
-        .toUpperCase();
-    }
-
-    /* =========================
-       09 - RENDER BUTTONS
-    ========================== */
-
-    function renderFacilityButtons() {
-      const facilityList = document.getElementById("facilityList");
-
-      const manageEmployeesButton = `
-        <button class="facility-btn" onclick="openMainDashboardUsers()">
-          Manage Employees
-          <span class="facility-name">Users / Access</span>
-        </button>
-      `;
-
-      const newFacilityButton = `
-        <button class="facility-btn black-btn" onclick="openNewFacilityPopup()">
-          +
-          <span class="facility-name">Enter New Facility</span>
-        </button>
-      `;
-
-      const facilityButtons = facilities.map((facility, index) => {
-        return `
-          <button class="facility-btn" onclick="openFacility(${index})">
-            ${escapeHtml(facility.initials)}
-            <span class="facility-name">${escapeHtml(facility.name)}</span>
-          </button>
-        `;
-      }).join("");
-
-      facilityList.innerHTML = manageEmployeesButton + newFacilityButton + facilityButtons;
-    }
-
-    /* =========================
-       10 - PIN CHECK
-    ========================== */
-
-    function getPin() {
-      return document.getElementById("loginInput").value.trim();
-    }
-
-    function getLoggedInEmployee() {
-      const pin = getPin();
-
-      if (!pin) {
-        showStatus("Enter PIN first.");
-        return null;
-      }
-
-      const employee = employees.find(row => {
-        return normalizePin(row.loginPin) === normalizePin(pin) &&
-               yesNo(row.active) !== "no";
-      });
-
-      if (!employee) {
-        showStatus("PIN not found or inactive.");
-        return null;
-      }
-
-      return employee;
-    }
-
-    function normalizePin(value) {
-      return String(value || "")
-        .replace(/\.0$/, "")
-        .replace(/[^0-9]/g, "");
-    }
-
-    /* =========================
-       11 - NAVIGATION
-    ========================== */
-
-    function openMainDashboardUsers() {
-      const employee = getLoggedInEmployee();
-
-      if (!employee) return;
-
-      const canOpen =
-        yesNo(employee.adminAccess) === "yes" ||
-        yesNo(employee.viewEmployees) === "yes" ||
-        yesNo(employee.viewMainDashboard) === "yes" ||
-        normalize(employee.role).toLowerCase() === "admin";
-
-      if (!canOpen) {
-        showStatus("No access to manage employees.");
-        return;
-      }
-
-      sessionStorage.setItem("loggedInEmployeeName", normalize(employee.employeeName));
-      sessionStorage.setItem("loggedInEmployeeRole", normalize(employee.role));
-
-      window.location.href = "main-dashboard-employees.html";
-    }
-
-    function openFacility(index) {
-      const employee = getLoggedInEmployee();
-
-      if (!employee) return;
-
-      const facility = facilities[index];
-
-      if (!facility) {
-        showStatus("Facility not found.");
-        return;
-      }
-
-      if (
-        yesNo(employee.viewFacilityDashboard) !== "yes" &&
-        yesNo(employee.adminAccess) !== "yes" &&
-        normalize(employee.role).toLowerCase() !== "admin"
-      ) {
-        showStatus("No access to facility dashboard.");
-        return;
-      }
-
-      if (!employeeCanAccessFacility(employee, facility)) {
-        showStatus("No access to this facility.");
-        return;
-      }
-
-      sessionStorage.setItem("loggedInEmployeeName", normalize(employee.employeeName));
-      sessionStorage.setItem("loggedInEmployeeRole", normalize(employee.role));
-      sessionStorage.setItem("selectedFacilityId", facility.id);
-      sessionStorage.setItem("selectedFacilityName", facility.name);
-
-      const url =
-        "../" + encodeURIComponent(facility.folder) + "/facilityinformation" + encodeURIComponent(facility.folder) + ".html" +
-        "?facilityId=" + encodeURIComponent(facility.id) +
-        "&facilityName=" + encodeURIComponent(facility.name);
-
-      window.location.href = url;
-    }
-
-    function employeeCanAccessFacility(employee, facility) {
-      const allowed = normalize(employee.allowedFacilities).toUpperCase();
-
-      if (!allowed || allowed === "ALL") return true;
-
-      const parts = allowed
-        .split(/[,\|;/]+/)
-        .map(item => item.trim().toUpperCase())
-        .filter(Boolean);
-
-      return parts.includes(facility.initials.toUpperCase()) ||
-             parts.includes(facility.id.toUpperCase()) ||
-             parts.includes(facility.name.toUpperCase());
-    }
-
-    /* =========================
-       12 - CSV PARSER
-    ========================== */
-
-    function parseCsv(csvText) {
-      const cleanText = String(csvText || "").trim();
-
-      if (!cleanText) return [];
-
-      const lines = cleanText.split(/\r?\n/);
-
-      if (lines.length < 2) return [];
-
-      const headers = splitCsvLine(lines[0]).map(header => header.trim()).filter(Boolean);
-      const rows = [];
-
-      for (let i = 1; i < lines.length; i++) {
-        const values = splitCsvLine(lines[i]);
-        const row = {};
-
-        headers.forEach((header, index) => {
-          row[header] = values[index] ? values[index].trim() : "";
-        });
-
-        rows.push(row);
-      }
-
-      return rows;
-    }
-
-    function splitCsvLine(line) {
-      const result = [];
-      let current = "";
-      let insideQuotes = false;
-
-      for (let i = 0; i < line.length; i++) {
-        const char = line[i];
-        const nextChar = line[i + 1];
-
-        if (char === '"' && insideQuotes && nextChar === '"') {
-          current += '"';
-          i++;
-        } else if (char === '"') {
-          insideQuotes = !insideQuotes;
-        } else if (char === "," && !insideQuotes) {
-          result.push(current);
-          current = "";
-        } else {
-          current += char;
-        }
-      }
-
-      result.push(current);
-      return result;
-    }
-
-    /* =========================
-       13 - STATUS AND HELPERS
-    ========================== */
-
-    function showStatus(message) {
-      const statusBox = document.getElementById("statusBox");
-      statusBox.innerText = message;
-      statusBox.classList.add("active");
-
-      setTimeout(() => {
-        statusBox.classList.remove("active");
-      }, 3000);
-    }
-
-    function normalize(value) {
-      return String(value || "").trim();
-    }
-
-    function yesNo(value) {
-      const clean = String(value || "").trim().toLowerCase();
-
-      if (clean === "true") return "yes";
-      if (clean === "1") return "yes";
-      if (clean === "x") return "yes";
-      if (clean === "checked") return "yes";
-
-      return clean;
-    }
-
-    function escapeHtml(value) {
-      return String(value || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-  </script>
+<main class="app">
+<h1 class="title">MAIN Dashboard</h1>
+<div class="tag">Facility Layout App</div>
+
+<section class="card-box">
+<div class="box-title">Enter PIN</div>
+<input
+id="loginInput"
+name="mainDashboardPinField"
+class="input"
+type="password"
+placeholder="Enter PIN"
+autocomplete="new-password"
+inputmode="numeric"
+maxlength="4"
+pattern="[0-9]*"
+value=""
+oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4);"
+/>
+<div id="statusBox" class="status"></div>
+</section>
+
+<section id="facilityList" class="facility-list">
+<button class="facility-btn" disabled>
+Loading
+<span class="facility-name">Please wait</span>
+</button>
+</section>
+
+<div class="version">
+Updated: 2026-05-23 02:15 PM • MAIN Dashboard/index.html
+</div>
+</main>
+
+<div id="newFacilityModal" class="modal-backdrop">
+<div class="modal-card">
+<div class="modal-title">Enter New Facility</div>
+<input
+id="newFacilityInput"
+name="newFacilityNameField"
+class="input"
+type="text"
+placeholder="Enter new facility name"
+autocomplete="off"
+value=""
+>
+<div class="modal-actions">
+<button class="modal-btn cancel-btn" onclick="closeNewFacilityPopup()">Cancel</button>
+<button class="modal-btn save-btn" onclick="saveNewFacility()">Save</button>
+</div>
+</div>
+</div>
+
+<script>
+/* =========================
+   01 - GOOGLE APPS SCRIPT SETTINGS
+========================= */
+
+const API_URL = 'YOUR_APPS_SCRIPT_WEBAPP_URL_HERE'; // Replace with deployed Apps Script URL
+
+let facilities = [];
+let employees = [];
+const LOCAL_FACILITY_STORAGE_KEY = "facilityLayoutLocalFacilitiesV3";
+
+/* =========================
+   02 - STARTUP
+========================= */
+document.addEventListener("DOMContentLoaded", async () => {
+  clearInputsOnLoad();
+  await loadAppData();
+  renderFacilityButtons();
+
+  document.getElementById("newFacilityInput").addEventListener("keydown", event => {
+    if (event.key === "Enter") saveNewFacility();
+  });
+});
+
+function clearInputsOnLoad() {
+  document.getElementById("loginInput").value = "";
+  document.getElementById("newFacilityInput").value = "";
+}
+
+/* =========================
+   03 - LOAD DATA FROM APPS SCRIPT
+========================= */
+async function loadAppData() {
+  await Promise.all([loadFacilities(), loadEmployees()]);
+}
+
+async function loadFacilities() {
+  try {
+    const res = await fetch(`${API_URL}?sheet=Facility_Info`);
+    facilities = await res.json();
+  } catch(e) {
+    console.error(e);
+    facilities = [];
+    showStatus("Could not load Facility_Info sheet.");
+  }
+}
+
+async function loadEmployees() {
+  try {
+    const res = await fetch(`${API_URL}?sheet=Employees`);
+    employees = await res.json();
+  } catch(e) {
+    console.error(e);
+    employees = [];
+    showStatus("Could not load Employees sheet.");
+  }
+}
+
+/* =========================
+   04 - RENDER BUTTONS
+========================= */
+function renderFacilityButtons() {
+  const facilityList = document.getElementById("facilityList");
+
+  const manageEmployeesButton = `
+    <button class="facility-btn" onclick="openMainDashboardUsers()">
+      Manage Employees
+      <span class="facility-name">Users / Access</span>
+    </button>`;
+
+  const newFacilityButton = `
+    <button class="facility-btn black-btn" onclick="openNewFacilityPopup()">
+      +
+      <span class="facility-name">Enter New Facility</span>
+    </button>`;
+
+  const facilityButtons = facilities.map((facility, index) => `
+    <button class="facility-btn" onclick="openFacility(${index})">
+      ${escapeHtml(facility.initials)}
+      <span class="facility-name">${escapeHtml(facility.name)}</span>
+    </button>
+  `).join("");
+
+  facilityList.innerHTML = manageEmployeesButton + newFacilityButton + facilityButtons;
+}
+
+/* =========================
+   05 - NAVIGATION
+========================= */
+function getPin() { return document.getElementById("loginInput").value.trim(); }
+
+function getLoggedInEmployee() {
+  const pin = getPin();
+  if (!pin) { showStatus("Enter PIN first."); return null; }
+  const employee = employees.find(row => String(row.loginPin||"").trim() === pin && row.active !== "no");
+  if (!employee) { showStatus("PIN not found or inactive."); return null; }
+  return employee;
+}
+
+function openMainDashboardUsers() {
+  const employee = getLoggedInEmployee();
+  if (!employee) return;
+
+  const canOpen = employee.adminAccess === "true" || employee.viewEmployees === "true" || employee.viewMainDashboard === "true" || employee.role.toLowerCase() === "admin";
+  if (!canOpen) { showStatus("No access to manage employees."); return; }
+
+  sessionStorage.setItem("loggedInEmployeeName", employee.employeeName);
+  sessionStorage.setItem("loggedInEmployeeRole", employee.role);
+  window.location.href = "main-dashboard-employees.html";
+}
+
+function openFacility(index) {
+  const employee = getLoggedInEmployee();
+  if (!employee) return;
+
+  const facility = facilities[index];
+  if (!facility) { showStatus("Facility not found."); return; }
+
+  sessionStorage.setItem("loggedInEmployeeName", employee.employeeName);
+  sessionStorage.setItem("loggedInEmployeeRole", employee.role);
+  sessionStorage.setItem("selectedFacilityId", facility.id);
+  sessionStorage.setItem("selectedFacilityName", facility.name);
+
+  window.location.href = `../${encodeURIComponent(facility.initials)}/facilityinformation${encodeURIComponent(facility.initials)}.html?facilityId=${encodeURIComponent(facility.id)}&facilityName=${encodeURIComponent(facility.name)}`;
+}
+
+/* =========================
+   06 - NEW FACILITY POPUP
+========================= */
+function openNewFacilityPopup() { document.getElementById("newFacilityModal").classList.add("active"); }
+function closeNewFacilityPopup() { document.getElementById("newFacilityModal").classList.remove("active"); }
+
+async function saveNewFacility() {
+  const input = document.getElementById("newFacilityInput");
+  const facilityName = input.value.trim();
+  if (!facilityName) { showStatus("Enter a facility name first."); return; }
+
+  const initials = facilityName.substring(0,4).toUpperCase();
+  const alreadyExists = facilities.some(f => f.name.toLowerCase()===facilityName.toLowerCase());
+  if (alreadyExists) { showStatus("That facility already exists."); return; }
+
+  const newFacility = {id:initials,name:facilityName,initials:initials,source:"local"};
+  facilities.push(newFacility);
+  await fetch(API_URL,{method:"POST",body:JSON.stringify({sheet:"Facility_Info",data:newFacility})});
+  renderFacilityButtons();
+  closeNewFacilityPopup();
+  showStatus("Facility saved.");
+}
+
+/* =========================
+   07 - HELPERS
+========================= */
+function showStatus(message) {
+  const statusBox = document.getElementById("statusBox");
+  statusBox.innerText = message;
+  statusBox.classList.add("active");
+  setTimeout(()=>statusBox.classList.remove("active"),3000);
+}
+
+function escapeHtml(value){return String(value||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");}
+</script>
 </body>
 </html>
