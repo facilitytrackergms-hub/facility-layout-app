@@ -71,7 +71,7 @@
     </section>
 
     <div class="version">
-      Updated: 2026-05-23 02:25 PM | MAIN Dashboard/main-dashboard-live.html
+      Updated: 2026-05-23 07:05 PM | MAIN Dashboard/main-dashboard-live.html
     </div>
   </main>
 
@@ -154,7 +154,6 @@
         facilities = [];
         snapshot.forEach(doc => {
           const data = doc.data();
-          // Supporting both lowercase database fields and camelCase options
           const fId = data.facilityid || data.facilityId || data.id;
           const fName = data.facilityname || data.facilityName || data.name;
 
@@ -182,13 +181,11 @@
         snapshot.forEach(doc => {
           const data = doc.data();
           
-          // Maps your explicit lowercase Firestore keys safely
           const empName = data.employeename || data.employeeName;
           const pinVal = data.loginpin || data.loginPin;
           const roleVal = data.role || "";
           
           if (normalize(empName) && normalizePin(pinVal)) {
-            // Checks active field. If it is blank but role is admin, automatically allow it.
             let isActive = data.active;
             if (normalize(isActive) === "" && normalize(roleVal).toLowerCase() === "admin") {
               isActive = "true";
@@ -342,5 +339,18 @@
       if (!employee) return;
       
       const isAnAdmin = normalize(employee.role).toLowerCase() === "admin" || yesNo(employee.adminAccess) === "yes";
-      const canOpen = isAnAdmin || yesNo(employee.viewEmployees
-                                         
+      const canOpen = isAnAdmin || yesNo(employee.viewEmployees) === "yes" || yesNo(employee.viewMainDashboard) === "yes";
+      
+      if (!canOpen) { showStatus("No access to manage employees."); return; }
+      sessionStorage.setItem("loggedInEmployeeName", normalize(employee.employeeName));
+      sessionStorage.setItem("loggedInEmployeeRole", normalize(employee.role));
+      window.location.href = "main-dashboard-employees.html";
+    }
+
+    function openFacility(index) {
+      const employee = getLoggedInEmployee();
+      if (!employee) return;
+      const facility = facilities[index];
+      if (!facility) { showStatus("Facility not found."); return; }
+      
+      const isAnAdmin = normalize(employee.role).toLowerCase() === "admin" || yesNo(employee.adminAccess) ===
