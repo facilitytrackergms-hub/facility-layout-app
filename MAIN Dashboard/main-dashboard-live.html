@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+  
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -177,10 +178,10 @@
         employees = [];
         snapshot.forEach(doc => {
           const data = doc.data();
-          if (normalize(data.employeeName) && normalizePin(data.loginPin)) {
+          if (normalize(data.employeeName) && normalizePin(data.loginpin)) {
             employees.push({
               employeeName: normalize(data.employeeName),
-              loginPin: normalizePin(data.loginPin),
+              loginpin: normalizePin(data.loginpin),
               active: data.active,
               adminAccess: data.adminAccess,
               viewEmployees: data.viewEmployees,
@@ -302,7 +303,7 @@
       const pin = getPin();
       if (!pin) { showStatus("Enter PIN first."); return null; }
       const employee = employees.find(row => {
-        return normalizePin(row.loginPin) === normalizePin(pin) && yesNo(row.active) !== "no";
+        return normalizePin(row.loginpin) === normalizePin(pin) && yesNo(row.active) !== "no";
       });
       if (!employee) { showStatus("PIN not found or inactive."); return null; }
       return employee;
