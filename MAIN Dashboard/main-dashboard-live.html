@@ -75,7 +75,7 @@
     </section>
 
     <div class="version">
-      Updated: 2026-05-23 7-40 PM | MAIN Dashboard/main-dashboard-live.html
+      Updated: 2026-05-23 7-55 PM | MAIN Dashboard/main-dashboard-live.html
     </div>
   </main>
 
@@ -156,6 +156,7 @@
       await Promise.all([
         loadFacilitiesFromFirebase(),
         loadEmployeesFromFirebase()
+        console.log("Employees loaded:", employees);
       ]);
     }
 
