@@ -273,7 +273,14 @@
     <section class="card-box">
       <div class="box-title">Add / Edit Employee</div>
 
-      <input id="employeeName" class="input" type="text" placeholder="Employee name" autocomplete="off">
+      <input
+        id="employeeName"
+        class="input"
+        type="text"
+        placeholder="Enter employee name"
+        autocomplete="off"
+        value=""
+      >
 
       <div class="two-col">
         <input
@@ -335,7 +342,7 @@
     </section>
 
     <div class="version">
-      Updated: 2026-05-23 12:50 PM • MAIN Dashboard/main-dashboard-employees.html
+      Updated: 2026-05-23 01:05 PM • MAIN Dashboard/main-dashboard-employees.html
     </div>
   </main>
 
@@ -349,7 +356,7 @@
     const FACILITY_INFO_CSV_URL =
       "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:csv&sheet=Facility_Info";
 
-    const STORAGE_KEY = "facilityLayoutEmployeesV3";
+    const STORAGE_KEY = "facilityLayoutEmployeesV4";
 
     let employees = [];
     let facilities = [];
@@ -360,11 +367,20 @@
     ========================== */
 
     document.addEventListener("DOMContentLoaded", async () => {
+      forceClearNameBox();
       await loadFacilitiesFromSheet();
       loadEmployees();
       renderFacilityDropdowns();
       renderEmployees();
     });
+
+    function forceClearNameBox() {
+      const nameInput = document.getElementById("employeeName");
+      if (nameInput) {
+        nameInput.value = "";
+        nameInput.placeholder = "Enter employee name";
+      }
+    }
 
     /* =========================
        06 - LOAD FACILITIES
