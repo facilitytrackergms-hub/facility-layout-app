@@ -1,1 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- =========================
+       01 - HEAD
+  ========================== -->
 
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>MAIN Dashboard</title>
+
+  <style>
+    /* =========================
+       02 - GLOBAL STYLE
+    ========================== */
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      min-height: 100vh;
+      padding: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 430px;
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 900;
+      margin: 0;
+      text-align: center;
+      line-height: 1.1;
+    }
+
+    .tag {
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #555;
+      margin-top: 5px;
+      margin-bottom: 14px;
+    }
+
+    .facility-box {
+      width: 100%;
+      border: 2px dashed #d2d2d2;
+      border-radius: 14px;
+      background: #fafafa;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .box-title {
+      font-size: 16px;
+      font-weight: 900;
+      color: #111;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .facility-list {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .facility-btn {
+      border: none;
+      background: #f4c542;
+      color: #111;
+      border-radius: 14px;
+      padding: 16px 10px;
+      font-size: 20px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.18);
+      text-align: center;
+      min-height: 58px;
+    }
+
+    .facility-btn:active {
+      transform: scale(0.98);
+    }
+
+    .empty-text {
+      font-size: 14px;
+      font-weight: 800;
+      color: #777;
+      text-align: center;
+      padding: 12px;
+      grid-column: 1 / -1;
+    }
+
+    .status {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 12px;
+      background: #eeeeee;
+      font-size: 13px;
+      font-weight: 800;
+      text-align: center;
+      color: #333;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .version {
+      margin-top: 14px;
+      text-align: center;
+      font-size: 11px;
+      color: #777;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- =========================
+       03 - APP SHELL
+  ========================== -->
+
+  <main class="app">
+    <h1 class="title">MAIN Dashboard</h1>
+    <div class="tag">Facility Layout App</div>
+
+    <section class="facility-box">
+      <div class="box-title">Facilities</div>
+
+      <section id="facilityList" class="facility-list">
+        <div class="empty-text">Loading facilities...</div>
+      </section>
+
+      <div id="statusBox" class="status hidden"></div>
+    </section>
+
+    <div class="version">
+      Updated: 2026-05-23 10:05 AM • MAIN Dashboard/index.html
+    </div>
+  </main>
+
+  <script>
+    /* =========================
+       04 - SETTINGS
+    ========================== */
+
+    const FACILITY_INFO_CSV_URL = "PASTE_FACILITY_INFO_CSV_LINK_HERE";
+
+    let facilities = [];
+
+    /* =========================
+       05 - STARTUP
+    ========================== */
+
+    document.addEventListener("DOMContentLoaded", loadFacilitiesFromSheet);
+
+    /* =========================
+       06 - LOAD FACILITIES FROM SHEET
+    ========================== */
+
+    async function loadFacilitiesFromSheet() {
+      const facilityList = document.getElementById("facilityList");
+
+      if (!FACILITY_INFO_CSV_URL || FACILITY_INFO_CSV_URL.includes("PASTE_")) {
+        facilityList.innerHTML = '<div class="empty-text">Add the Facility_Info CSV link in the code.</div>';
+        return;
+      }
+
+      try {
+        const response = await fetch(FACILITY_INFO_CSV_URL);
+        const csvText = await response.text();
+
+        facilities = parseCsv(csvText)
+          .filter(row => row.facilityId && row.facilityName)
+          .map(row => {
+            return {
+              facilityId: row.facilityId.trim(),
+              facilityName: row.facilityName.trim(),
+              facilityType: row.facilityType || "",
+              address: row.address || "",
+              city: row.city || "",
+              state: row.state || "",
+              initials: makeInitials(row.facilityName),
+              folder: makeInitials(row.facilityName)
+            };
+          });
+
+        renderFacilities();
+      } catch (error) {
+        console.error(error);
+        facilityList.innerHTML = '<div class="empty-text">Could not load facilities.</div>';
+      }
+    }
+
+    /* =========================
+       07 - RENDER FACILITIES
+    ========================== */
+
+    function renderFacilities() {
+      const facilityList = document.getElementById("facilityList");
+
+      if (!facilities.length) {
+        facilityList.innerHTML = '<div class="empty-text">No facilities found.</div>';
+        return;
+      }
+
+      facilityList.innerHTML = facilities.map(facility => {
+        return `
+          <button
+            class="facility-btn"
+            title="${escapeHtml(facility.facilityName)}"
+            onclick="openFacility('${escapeForJs(facility.folder)}', '${escapeForJs(facility.facilityId)}', '${escapeForJs(facility.facilityName)}')"
+          >
+            ${escapeHtml(facility.initials)}
+          </button>
+        `;
+      }).join("");
+    }
+
+    /* =========================
+       08 - FACILITY NAVIGATION
+    ========================== */
+
+    function openFacility(folder, facilityId, facilityName) {
+      const url =
+        "../" + encodeURIComponent(folder) + "/index.html" +
+        "?facilityId=" + encodeURIComponent(facilityId) +
+        "&facilityName=" + encodeURIComponent(facilityName);
+
+      window.location.href = url;
+    }
+
+    /* =========================
+       09 - CSV PARSER
+    ========================== */
+
+    function parseCsv(csvText) {
+      const lines = csvText.trim().split(/\r?\n/);
+
+      if (lines.length < 2) return [];
+
+      const headers = splitCsvLine(lines[0]).map(header => header.trim());
+      const rows = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const values = splitCsvLine(lines[i]);
+        const row = {};
+
+        headers.forEach((header, index) => {
+          row[header] = values[index] ? values[index].trim() : "";
+        });
+
+        rows.push(row);
+      }
+
+      return rows;
+    }
+
+    function splitCsvLine(line) {
+      const result = [];
+      let current = "";
+      let insideQuotes = false;
+
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        const nextChar = line[i + 1];
+
+        if (char === '"' && insideQuotes && nextChar === '"') {
+          current += '"';
+          i++;
+        } else if (char === '"') {
+          insideQuotes = !insideQuotes;
+        } else if (char === "," && !insideQuotes) {
+          result.push(current);
+          current = "";
+        } else {
+          current += char;
+        }
+      }
+
+      result.push(current);
+      return result;
+    }
+
+    /* =========================
+       10 - HELPERS
+    ========================== */
+
+    function makeInitials(name) {
+      const cleanedName = String(name || "")
+        .replace(/\/.*/g, "")
+        .replace(/[^a-zA-Z0-9 ]/g, " ")
+        .trim();
+
+      const words = cleanedName.split(" ").filter(Boolean);
+
+      if (!words.length) return "NEW";
+
+      if (words.length === 1) {
+        return words[0].substring(0, 3).toUpperCase();
+      }
+
+      return words
+        .map(word => word[0])
+        .join("")
+        .substring(0, 4)
+        .toUpperCase();
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function escapeForJs(value) {
+      return String(value)
+        .replace(/\\/g, "\\\\")
+        .replace(/'/g, "\\'");
+    }
+  </script>
+</body>
+</html>
