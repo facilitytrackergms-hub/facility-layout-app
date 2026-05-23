@@ -353,4 +353,48 @@
       const facility = facilities[index];
       if (!facility) { showStatus("Facility not found."); return; }
       
-      const isAnAdmin = normalize(employee.role).toLowerCase() === "admin" || yesNo(employee.adminAccess) ===
+      const isAnAdmin = normalize(employee.role).toLowerCase() === "admin" || yesNo(employee.adminAccess) === "yes";
+      const hasViewPerm = yesNo(employee.viewFacilityDashboard) === "yes" || isAnAdmin;
+      
+      if (!hasViewPerm) {
+        showStatus("No access to facility dashboard.");
+        return;
+      }
+      if (!isAnAdmin && !employeeCanAccessFacility(employee, facility)) { showStatus("No access to this facility."); return; }
+      
+      sessionStorage.setItem("loggedInEmployeeName", normalize(employee.employeeName));
+      sessionStorage.setItem("loggedInEmployeeRole", normalize(employee.role));
+      sessionStorage.setItem("selectedFacilityId", facility.id);
+      sessionStorage.setItem("selectedFacilityName", facility.name);
+
+      const url = "../" + encodeURIComponent(facility.folder) + "/facilityinformation" + encodeURIComponent(facility.folder) + ".html" + "?facilityId=" + encodeURIComponent(facility.id) + "&facilityName=" + encodeURIComponent(facility.name);
+      window.location.href = url;
+    }
+
+    function employeeCanAccessFacility(employee, facility) {
+      const allowed = normalize(employee.allowedFacilities).toUpperCase();
+      if (!allowed || allowed === "ALL") return true;
+      const parts = allowed.split(/[,\|;/]+/).map(item => item.trim().toUpperCase()).filter(Boolean);
+      return parts.includes(facility.initials.toUpperCase()) || parts.includes(facility.id.toUpperCase()) || parts.includes(facility.name.toUpperCase());
+    }
+
+    /* =========================
+       12 - STATUS AND HELPERS
+    ========================== */
+    function showStatus(message) {
+      const statusBox = document.getElementById("statusBox");
+      statusBox.innerText = message;
+      statusBox.classList.add("active");
+      setTimeout(() => { statusBox.classList.remove("active"); }, 3000);
+    }
+
+    function normalize(value) { return String(value || "").trim(); }
+    
+    function yesNo(value) {
+      const clean = String(value || "").trim().toLowerCase();
+      if (clean === "true" || clean === "1" || clean === "x" || clean === "checked" || clean === "yes") return "yes";
+      return clean;
+    }
+    
+    function escapeHtml(value) {
+      return String(value || "").replace(/&/g, "&amp;").
