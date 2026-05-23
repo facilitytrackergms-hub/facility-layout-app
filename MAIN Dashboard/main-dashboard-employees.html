@@ -1,240 +1,134 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Employees View</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f2f2f2;<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Employees View</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f2f2f2;
-      display: flex;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 20px;
-      max-width: 360px;
-      width: 100%;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-
-    h2 {
-      margin-top: 0;
-      font-size: 18px;
-    }
-
-    label {
-      display: block;
-      margin: 12px 0 4px;
-      font-weight: bold;
-    }
-
-    input[type="text"], input[type="password"], select, textarea {
-      width: 100%;
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      margin-bottom: 8px;
-      box-sizing: border-box;
-    }
-
-    textarea {
-      resize: vertical;
-    }
-
-    .button {
-      display: block;
-      width: 100%;
-      padding: 10px;
-      margin: 6px 0;
-      border: none;
-      border-radius: 6px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-
-    .button-save {
-      background-color: #f0b912;
-      color: #000;
-    }
-
-    .button-clear {
-      background-color: #000;
-      color: #fff;
-    }
-
-    .button-allowed {
-      background-color: #f0b912;
-      color: #000;
-      margin-top: 8px;
-      margin-bottom: 8px;
-    }
-
-    .back-button {
-      float: right;
-      background-color: #000;
-      color: #fff;
-      border-radius: 6px;
-      padding: 4px 10px;
-      cursor: pointer;
-      text-decoration: none;
-      font-size: 14px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Employees - Main Dashboard Access</title>
+<style>
+body {margin:0;font-family:Arial,sans-serif;background:#f2f2f2;display:flex;justify-content:center;padding:10px;}
+.card {width:100%;max-width:460px;background:white;border-radius:12px;padding:12px;margin-bottom:12px;box-shadow:0 3px 10px rgba(0,0,0,0.15);}
+h2 {margin-top:0;font-size:16px;text-align:center;}
+.form-group {margin-bottom:10px;}
+.form-group label {display:block;font-size:12px;margin-bottom:2px;font-weight:bold;}
+.form-group input,.form-group select,.form-group textarea {width:100%;padding:6px;font-size:12px;border-radius:6px;border:1px solid #ccc;}
+button {width:100%;padding:12px;margin-top:10px;font-size:14px;border:none;border-radius:6px;cursor:pointer;}
+.btn-black {background:#000;color:#fff;}
+.btn-yellow {background:#ffbf00;color:#000;}
+.version-label {font-size:10px;text-align:center;margin-top:6px;color:#777;}
+.employee-details {display:none;margin-top:10px;}
+</style>
 </head>
 <body>
-  <div class="card">
-    <a href="#" class="back-button">Back</a>
-    <h2>Employees<br><small>Main Dashboard Access</small></h2>
-    
-    <form id="employeeForm">
-      <label for="employeeId">Employee ID</label>
-      <input type="text" id="employeeId" placeholder="EMP001">
+<div class="card">
+<h2>Employees<br><small>Main Dashboard Access</small></h2>
 
-      <label for="pin">PIN</label>
-      <input type="password" id="pin">
+<div class="form-group">
+<label for="pin">Enter Admin PIN</label>
+<input type="password" id="pin" value="">
+</div>
 
-      <label for="role">Role</label>
-      <select id="role">
-        <option value="admin">Admin</option>
-        <option value="staff">Staff</option>
-      </select>
+<button class="btn-yellow" id="manageEmployeesBtn">Manage Employees</button>
 
-      <label for="facilityAccess">Facility Access</label>
-      <select id="facilityAccess">
-        <option value="all">ALL Facilities</option>
-        <option value="default">Default facility</option>
-      </select>
+<div class="employee-details" id="employeeDetails">
+<div class="form-group">
+<label for="editEmployeeName">Employee Name</label>
+<input type="text" id="editEmployeeName" value="Ivy Edward">
+</div>
 
-      <button type="button" class="button button-allowed">Allowed Views</button>
+<div class="form-group">
+<label for="editPin">PIN</label>
+<input type="password" id="editPin" value="">
+</div>
 
-      <label for="notes">Notes</label>
-      <textarea id="notes" rows="3" placeholder="Notes"></textarea>
+<div class="form-group">
+<label for="editRole">Role</label>
+<select id="editRole">
+<option value="" selected></option>
+<option>Admin</option>
+<option>Employee</option>
+<option>Housekeeper</option>
+<option>Laundry</option>
+</select>
+</div>
 
-      <button type="submit" class="button button-save">Save Employee</button>
-      <button type="button" class="button button-clear" onclick="document.getElementById('employeeForm').reset();">Clear Form</button>
-    </form>
+<div class="form-group">
+<label for="editFacilityAccess">Facility Access</label>
+<select id="editFacilityAccess">
+<option value="" selected></option>
+<option>All Facilities</option>
+<option>Facility 1</option>
+<option>Facility 2</option>
+</select>
+</div>
 
-    <div id="savedEmployees">
-      <h3>Saved Employees</h3>
-      <!-- Dynamically populated list will appear here -->
-    </div>
-  </div>
-</body>
-</html>
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 10px;
+<div class="form-group">
+<label for="editNotes">Notes</label>
+<textarea id="editNotes" rows="2"></textarea>
+</div>
+
+<button class="btn-yellow" id="saveEditBtn">Save Changes</button>
+</div>
+
+<div class="version-label">
+Updated: 2026-05-23 09:10 AM • employees.html
+</div>
+</div>
+
+<script>
+const manageBtn = document.getElementById('manageEmployeesBtn');
+const pinInput = document.getElementById('pin');
+const employeeDetails = document.getElementById('employeeDetails');
+const saveBtn = document.getElementById('saveEditBtn');
+
+async function validateAdminPin(pin) {
+  try {
+    const res = await fetch(`${API_URL}?sheet=Employees`);
+    const data = await res.json();
+    return data.find(emp => String(emp.loginPin || "") === pin && emp.role.toLowerCase() === "admin");
+  } catch(e) {
+    console.error(e);
+    return null;
+  }
+}
+
+manageBtn.addEventListener('click', async () => {
+  const pin = pinInput.value.trim();
+  if(!pin) { alert("Enter PIN"); return; }
+
+  const admin = await validateAdminPin(pin);
+  if(!admin) { alert("Invalid admin PIN"); return; }
+
+  employeeDetails.style.display = 'block';
+  document.getElementById('editEmployeeName').value = "Ivy Edward";
+  document.getElementById('editPin').value = "";
+  document.getElementById('editRole').value = "";
+  document.getElementById('editFacilityAccess').value = "";
+  document.getElementById('editNotes').value = "";
+});
+
+saveBtn.addEventListener('click', async () => {
+  const payload = {
+    sheet: "Employees",
+    data: {
+      employeeName: document.getElementById('editEmployeeName').value,
+      loginPin: document.getElementById('editPin').value,
+      role: document.getElementById('editRole').value,
+      allowedFacilities: document.getElementById('editFacilityAccess').value,
+      notes: document.getElementById('editNotes').value
     }
-    .card {
-      width: 100%;
-      max-width: 460px;
-      background: white;
-      border-radius: 22px;
-      padding: 14px;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.18);
-    }
-    h1 {
-      text-align: center;
-      margin: 0 0 12px;
-      font-size: 28px;
-      color: #1847d1;
-    }
-    button {
-      width: 100%;
-      padding: 14px;
-      margin: 5px 0;
-      border-radius: 14px;
-      border: none;
-      font-size: 18px;
-      font-weight: bold;
-      background: #1976d2;
-      color: white;
-      cursor: pointer;
-    }
-    button.back {
-      background: #555;
-    }
-    .employee-item {
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      padding: 10px;
-      margin: 8px 0;
-      background: #fafafa;
-    }
-    .version-label {
-      text-align: center;
-      font-size: 12px;
-      font-weight: bold;
-      color: #777;
-      margin-top: 10px;
-    }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <h1>Employees</h1>
+  };
 
-    <div id="employeesList">
-      <!-- Employee entries will be loaded here -->
-    </div>
-
-    <button class="back" onclick="goBack()">Back</button>
-    <div class="version-label">Updated: 2026-05-23 09:10 AM | employees.html</div>
-  </div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBgq_ooBeEN4noEyIxYPLVokgM6RjCO648",
-      authDomain: "gms-task-tracker.firebaseapp.com",
-      projectId: "gms-task-tracker",
-      storageBucket: "gms-task-tracker.firebasestorage.app",
-      messagingSenderId: "790880979860",
-      appId: "1:790880979860:web:6faee2a6e56955af3c1d81",
-      measurementId: "G-5TRHQMS039"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    async function loadEmployees() {
-      const list = document.getElementById("employeesList");
-      list.innerHTML = "Loading...";
-
-      const snap = await getDocs(collection(db, "employees"));
-      list.innerHTML = "";
-
-      snap.docs.forEach(doc => {
-        const data = doc.data();
-        const div = document.createElement("div");
-        div.className = "employee-item";
-        div.innerHTML = `<b>${data.employeeName || "Unnamed"}</b><br>Role: ${data.role || ""}<br>Schedule: ${data.assignment || ""}`;
-        list.appendChild(div);
-      });
-    }
-
-    function goBack() {
-      window.history.back();
-    }
-
-    loadEmployees();
-  </script>
+  try {
+    await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    alert("Employee details saved!");
+  } catch(e) {
+    console.error(e);
+    alert("Failed to save employee data.");
+  }
+});
+</script>
 </body>
 </html>
