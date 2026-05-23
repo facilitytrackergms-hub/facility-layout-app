@@ -75,7 +75,7 @@
     </section>
 
     <div class="version">
-      Updated: 2026-05-23 7-21 PM | MAIN Dashboard/main-dashboard-live.html
+      Updated: 2026-05-23 7-28 PM | MAIN Dashboard/main-dashboard-live.html
     </div>
   </main>
 
@@ -187,17 +187,17 @@
         employees = [];
         snapshot.forEach(doc => {
           const data = doc.data();
-          if (normalize(data.employeeName) && normalizePin(data.loginpin)) {
+          if (normalize(data.employeename) && normalizePin(data.loginpin)) {
             employees.push({
-              employeeName: normalize(data.employeeName),
+              employeename: normalize(data.employeename),
               loginpin: normalizePin(data.loginpin),
               active: data.active,
-              adminAccess: data.adminAccess,
-              viewEmployees: data.viewEmployees,
-              viewMainDashboard: data.viewMainDashboard,
-              viewFacilityDashboard: data.viewFacilityDashboard,
+              adminaccess: data.adminaccess,
+              viewemployees: data.viewemployees,
+              viewmaindashboard: data.viewmaindashboard,
+              viewfacilitydashboard: data.viewfacilitydashboard,
               role: data.role,
-              allowedFacilities: data.allowedFacilities
+              allowedfacilities: data.allowedfacilities
             });
           }
         });
@@ -338,9 +338,9 @@
     function openMainDashboardUsers() {
       const employee = getLoggedInEmployee();
       if (!employee) return;
-      const canOpen = yesNo(employee.adminAccess) === "yes" || yesNo(employee.viewEmployees) === "yes" || yesNo(employee.viewMainDashboard) === "yes" || normalize(employee.role).toLowerCase() === "admin";
+      const canOpen = yesNo(employee.adminaccess) === "yes" || yesNo(employee.viewemployees) === "yes" || yesNo(employee.viewmaindashboard) === "yes" || normalize(employee.role).toLowerCase() === "admin";
       if (!canOpen) { showStatus("No access to manage employees."); return; }
-      sessionStorage.setItem("loggedInEmployeeName", normalize(employee.employeeName));
+      sessionStorage.setItem("loggedInEmployeeName", normalize(employee.employeename));
       sessionStorage.setItem("loggedInEmployeeRole", normalize(employee.role));
       window.location.href = "main-dashboard-employees.html";
     }
@@ -350,12 +350,12 @@
       if (!employee) return;
       const facility = facilities[index];
       if (!facility) { showStatus("Facility not found."); return; }
-      if (yesNo(employee.viewFacilityDashboard) !== "yes" && yesNo(employee.adminAccess) !== "yes" && normalize(employee.role).toLowerCase() !== "admin") {
+      if (yesNo(employee.viewfacilitydashboard) !== "yes" && yesNo(employee.adminaccess) !== "yes" && normalize(employee.role).toLowerCase() !== "admin") {
         showStatus("No access to facility dashboard.");
         return;
       }
       if (!employeeCanAccessFacility(employee, facility)) { showStatus("No access to this facility."); return; }
-      sessionStorage.setItem("loggedInEmployeeName", normalize(employee.employeeName));
+      sessionStorage.setItem("loggedInEmployeeName", normalize(employee.employeename));
       sessionStorage.setItem("loggedInEmployeeRole", normalize(employee.role));
       sessionStorage.setItem("selectedFacilityId", facility.id);
       sessionStorage.setItem("selectedFacilityName", facility.name);
@@ -365,7 +365,7 @@
     }
 
     function employeeCanAccessFacility(employee, facility) {
-      const allowed = normalize(employee.allowedFacilities).toUpperCase();
+      const allowed = normalize(employee.allowedfacilities).toUpperCase();
       if (!allowed || allowed === "ALL") return true;
       const parts = allowed.split(/[,\|;/]+/).map(item => item.trim().toUpperCase()).filter(Boolean);
       return parts.includes(facility.initials.toUpperCase()) || parts.includes(facility.id.toUpperCase()) || parts.includes(facility.name.toUpperCase());
