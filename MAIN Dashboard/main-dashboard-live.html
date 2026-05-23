@@ -318,16 +318,25 @@
        ========================================================================== */
     function getPin() { return document.getElementById("loginInput").value.trim(); }
 
-    function getLoggedInEmployee() {
-      const pin = getPin();
-      if (!pin) { showStatus("Enter PIN first."); return null; }
-      const employee = employees.find(row => {
-        return normalizePin(row.loginpin) === normalizePin(pin) && yesNo(row.active) !== "no";
-      });
-      if (!employee) { showStatus("PIN not found or inactive."); return null; }
-      return employee;
-    }
+function getLoggedInEmployee() {
+  const pin = getPin();
+  if (!pin) { showStatus("Enter PIN first."); return null; }
 
+  // ensure employees are loaded
+  if (!employees || !employees.length) {
+    showStatus("Employees not loaded yet.");
+    return null;
+  }
+
+  const employee = employees.find(row => {
+    const rowPin = normalizePin(row.loginpin);
+    const isActive = row.active === true || String(row.active).toLowerCase() === "true";
+    return rowPin === normalizePin(pin) && isActive;
+  });
+
+  if (!employee) { showStatus("PIN not found or inactive."); return null; }
+  return employee;
+}
     function normalizePin(value) { return String(value || "").replace(/\.0$/, "").replace(/[^0-9]/g, ""); }
     /* ==========================================================================
                                    PIN CHECK                                    
