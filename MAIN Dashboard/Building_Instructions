@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Facility Layout Instructions</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { color: #2c3e50; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #f4f4f4; }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+  </style>
+</head>
+<body>
+  <h1>Facility Layout Instructions</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Instruction ID</th>
+        <th>Group</th>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Step Order</th>
+        <th>Parent Section</th>
+        <th>Required</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>BI_001</td>
+        <td>Foundation</td>
+        <td>Choose App Type</td>
+        <td>Define what type of Facility Layout App is being built</td>
+        <td>1</td>
+        <td>Setup</td>
+        <td>YES</td>
+        <td>Pending</td>
+      </tr>
+      <tr>
+        <td>BI_002</td>
+        <td>Foundation</td>
+        <td>Define Facility Name</td>
+        <td>Enter facility/building/company name</td>
+        <td>2</td>
+        <td>Setup</td>
+        <td>YES</td>
+        <td>Pending</td>
+      </tr>
+      <tr>
+        <td>BI_003</td>
+        <td>Foundation</td>
+        <td>Define Facility Info</td>
+        <td>Enter address phone email and facility details</td>
+        <td>3</td>
+        <td>Setup</td>
+        <td>YES</td>
+        <td>Pending</td>
+      </tr>
+      <!-- Add additional instructions here following the same pattern -->
+    </tbody>
+  </table>
+</body>
+</html>
