@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Facility Info</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { color: #2c3e50; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #f4f4f4; }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+  </style>
+</head>
+<body>
+  <h1>Facility Info</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Facility ID</th>
+        <th>Facility Name</th>
+        <th>Facility Type</th>
+        <th>Address</th>
+        <th>City</th>
+        <th>State</th>
+        <th>ZIP</th>
+        <th>Main Phone</th>
+        <th>Main Email</th>
+        <th>Manager Name</th>
+        <th>Manager Phone</th>
+        <th>Manager Email</th>
+        <th>Maintenance Contact</th>
+        <th>Maintenance Phone</th>
+        <th>Emergency Contact</th>
+        <th>Emergency Phone</th>
+        <th>Notes</th>
+        <th>Last Updated</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>F_001</td>
+        <td>Grace Manor Suites</td>
+        <td>Assisted Living</td>
+        <td>123 Grace Manor Dr</td>
+        <td>Lakeland</td>
+        <td>FL</td>
+        <td>33801</td>
+        <td>863-555-0100</td>
+        <td>office@gracemanorsuites.com</td>
+        <td>berry </td>
+        <td>863-555-0101</td>
+        <td>manager@gracemanorsuites.com</td>
+        <td>Maintenance Director</td>
+        <td>863-555-0102</td>
+        <td>Emergency Contact</td>
+        <td>863-555-0199</td>
+        <td>Starter facility info for testing</td>
+        <td>2026-05-23 00:00:00</td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>
