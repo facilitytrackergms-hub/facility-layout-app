@@ -7,7 +7,7 @@
 
   <style>
     /* =========================
-       02 - GLOBAL STYLE (UNTOUCHED)
+       02 - GLOBAL STYLE
     ========================== */
     * { box-sizing: border-box; }
     body { margin: 0; font-family: Arial, sans-serif; background: #f2f2f2; min-height: 100vh; padding: 10px; display: flex; justify-content: center; align-items: flex-start; }
@@ -98,7 +98,7 @@
     /* =========================
        05 - FIREBASE CONFIGURATION
     ========================== */
-     const firebaseConfig = {
+    const firebaseConfig = {
       apiKey: "AIzaSyBDjQ6P5kO2N7QPChqS1t7VyJA_LZ7OCfQ",
       authDomain: "facility-layout-app-builder.firebaseapp.com",
       projectId: "facility-layout-app-builder",
@@ -150,50 +150,66 @@
 
     async function loadFacilitiesFromFirebase() {
       try {
-        const snapshot = await db.collection("facilities").get();
+        const snapshot = await db.collection("Facility_Info").get();
         facilities = [];
         snapshot.forEach(doc => {
           const data = doc.data();
-          if (normalize(data.id) && normalize(data.name)) {
-            const initials = makeInitials(data.name);
+          // Supporting both lowercase database fields and camelCase options
+          const fId = data.facilityid || data.facilityId || data.id;
+          const fName = data.facilityname || data.facilityName || data.name;
+
+          if (normalize(fId) && normalize(fName)) {
+            const initials = makeInitials(fName);
             facilities.push({
-              id: normalize(data.id),
-              name: normalize(data.name),
+              id: normalize(fId),
+              name: normalize(fName),
               initials: initials,
               folder: data.folder || initials,
-              source: data.source || "database"
+              source: "database"
             });
           }
         });
       } catch (error) {
         console.error(error);
-        showStatus("Could not load facilities database.");
+        showStatus("Could not load Facility_Info database.");
       }
     }
 
     async function loadEmployeesFromFirebase() {
       try {
-        const snapshot = await db.collection("employees").get();
+        const snapshot = await db.collection("Employees").get();
         employees = [];
         snapshot.forEach(doc => {
           const data = doc.data();
-          if (normalize(data.employeeName) && normalizePin(data.loginPin)) {
+          
+          // Maps your explicit lowercase Firestore keys safely
+          const empName = data.employeename || data.employeeName;
+          const pinVal = data.loginpin || data.loginPin;
+          const roleVal = data.role || "";
+          
+          if (normalize(empName) && normalizePin(pinVal)) {
+            // Checks active field. If it is blank but role is admin, automatically allow it.
+            let isActive = data.active;
+            if (normalize(isActive) === "" && normalize(roleVal).toLowerCase() === "admin") {
+              isActive = "true";
+            }
+
             employees.push({
-              employeeName: normalize(data.employeeName),
-              loginPin: normalizePin(data.loginPin),
-              active: data.active,
-              adminAccess: data.adminAccess,
-              viewEmployees: data.viewEmployees,
-              viewMainDashboard: data.viewMainDashboard,
-              viewFacilityDashboard: data.viewFacilityDashboard,
-              role: data.role,
-              allowedFacilities: data.allowedFacilities
+              employeeName: normalize(empName),
+              loginPin: normalizePin(pinVal),
+              active: isActive,
+              adminAccess: data.adminaccess !== undefined ? data.adminaccess : data.adminAccess,
+              viewEmployees: data.viewemployees !== undefined ? data.viewemployees : data.viewEmployees,
+              viewMainDashboard: data.viewmaindashboard !== undefined ? data.viewmaindashboard : data.viewMainDashboard,
+              viewFacilityDashboard: data.viewfacilitydashboard !== undefined ? data.viewfacilitydashboard : data.viewFacilityDashboard,
+              role: normalize(roleVal),
+              allowedFacilities: data.allowedfacilities !== undefined ? data.allowedfacilities : data.allowedFacilities
             });
           }
         });
       } catch (error) {
         console.error(error);
-        showStatus("Could not load employees database.");
+        showStatus("Could not load Employees database.");
       }
     }
 
@@ -234,15 +250,21 @@
       }
 
       const newFacilityObj = {
-        id: initials,
-        name: facilityName,
+        facilityid: initials,
+        facilityname: facilityName,
         folder: initials,
         source: "database"
       };
 
       try {
-        await db.collection("facilities").add(newFacilityObj);
-        facilities.push({ ...newFacilityObj, initials: initials });
+        await db.collection("Facility_Info").add(newFacilityObj);
+        facilities.push({ 
+          id: initials, 
+          name: facilityName, 
+          initials: initials, 
+          folder: initials, 
+          source: "database" 
+        });
         renderFacilityButtons();
         closeNewFacilityPopup();
         showStatus("Facility saved to database.");
@@ -265,7 +287,7 @@
     }
 
     /* =========================
-       09 - RENDER BUTTONS (UNTOUCHED)
+       09 - RENDER BUTTONS
     ========================== */
     function renderFacilityButtons() {
       const facilityList = document.getElementById("facilityList");
@@ -294,16 +316,18 @@
     }
 
     /* =========================
-       10 - PIN CHECK (UNTOUCHED)
+       10 - PIN CHECK
     ========================== */
     function getPin() { return document.getElementById("loginInput").value.trim(); }
 
     function getLoggedInEmployee() {
       const pin = getPin();
       if (!pin) { showStatus("Enter PIN first."); return null; }
+      
       const employee = employees.find(row => {
         return normalizePin(row.loginPin) === normalizePin(pin) && yesNo(row.active) !== "no";
       });
+      
       if (!employee) { showStatus("PIN not found or inactive."); return null; }
       return employee;
     }
@@ -311,63 +335,12 @@
     function normalizePin(value) { return String(value || "").replace(/\.0$/, "").replace(/[^0-9]/g, ""); }
 
     /* =========================
-       11 - NAVIGATION (UNTOUCHED)
+       11 - NAVIGATION
     ========================== */
     function openMainDashboardUsers() {
       const employee = getLoggedInEmployee();
       if (!employee) return;
-      const canOpen = yesNo(employee.adminAccess) === "yes" || yesNo(employee.viewEmployees) === "yes" || yesNo(employee.viewMainDashboard) === "yes" || normalize(employee.role).toLowerCase() === "admin";
-      if (!canOpen) { showStatus("No access to manage employees."); return; }
-      sessionStorage.setItem("loggedInEmployeeName", normalize(employee.employeeName));
-      sessionStorage.setItem("loggedInEmployeeRole", normalize(employee.role));
-      window.location.href = "main-dashboard-employees.html";
-    }
-
-    function openFacility(index) {
-      const employee = getLoggedInEmployee();
-      if (!employee) return;
-      const facility = facilities[index];
-      if (!facility) { showStatus("Facility not found."); return; }
-      if (yesNo(employee.viewFacilityDashboard) !== "yes" && yesNo(employee.adminAccess) !== "yes" && normalize(employee.role).toLowerCase() !== "admin") {
-        showStatus("No access to facility dashboard.");
-        return;
-      }
-      if (!employeeCanAccessFacility(employee, facility)) { showStatus("No access to this facility."); return; }
-      sessionStorage.setItem("loggedInEmployeeName", normalize(employee.employeeName));
-      sessionStorage.setItem("loggedInEmployeeRole", normalize(employee.role));
-      sessionStorage.setItem("selectedFacilityId", facility.id);
-      sessionStorage.setItem("selectedFacilityName", facility.name);
-
-      const url = "../" + encodeURIComponent(facility.folder) + "/facilityinformation" + encodeURIComponent(facility.folder) + ".html" + "?facilityId=" + encodeURIComponent(facility.id) + "&facilityName=" + encodeURIComponent(facility.name);
-      window.location.href = url;
-    }
-
-    function employeeCanAccessFacility(employee, facility) {
-      const allowed = normalize(employee.allowedFacilities).toUpperCase();
-      if (!allowed || allowed === "ALL") return true;
-      const parts = allowed.split(/[,\|;/]+/).map(item => item.trim().toUpperCase()).filter(Boolean);
-      return parts.includes(facility.initials.toUpperCase()) || parts.includes(facility.id.toUpperCase()) || parts.includes(facility.name.toUpperCase());
-    }
-
-    /* =========================
-       12 - STATUS AND HELPERS (UNTOUCHED)
-    ========================== */
-    function showStatus(message) {
-      const statusBox = document.getElementById("statusBox");
-      statusBox.innerText = message;
-      statusBox.classList.add("active");
-      setTimeout(() => { statusBox.classList.remove("active"); }, 3000);
-    }
-
-    function normalize(value) { return String(value || "").trim(); }
-    function yesNo(value) {
-      const clean = String(value || "").trim().toLowerCase();
-      if (clean === "true" || clean === "1" || clean === "x" || clean === "checked") return "yes";
-      return clean;
-    }
-    function escapeHtml(value) {
-      return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-    }
-  </script>
-</body>
-</html>
+      
+      const isAnAdmin = normalize(employee.role).toLowerCase() === "admin" || yesNo(employee.adminAccess) === "yes";
+      const canOpen = isAnAdmin || yesNo(employee.viewEmployees
+                                         
