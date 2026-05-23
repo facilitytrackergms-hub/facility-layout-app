@@ -8,7 +8,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>MAIN Dashboard</title>
+  <title>Main Dashboard Employees</title>
 
   <style>
     /* =========================
@@ -39,21 +39,38 @@
       box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
     }
 
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
     .title {
-      font-size: 23px;
+      font-size: 21px;
       font-weight: 900;
       margin: 0;
-      text-align: center;
       line-height: 1.1;
     }
 
     .tag {
-      text-align: center;
       font-size: 12px;
       font-weight: 700;
       color: #555;
-      margin-top: 5px;
-      margin-bottom: 14px;
+      margin-top: 4px;
+    }
+
+    .back-btn {
+      border: none;
+      background: #222;
+      color: white;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+      white-space: nowrap;
     }
 
     .card-box {
@@ -65,23 +82,36 @@
     }
 
     .box-title {
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 900;
       text-align: center;
       margin-bottom: 10px;
       color: #111;
     }
 
-    .input {
+    .input,
+    .select,
+    .textarea {
       width: 100%;
       border: 1px solid #bbb;
       border-radius: 12px;
-      padding: 12px;
-      font-size: 16px;
+      padding: 11px;
+      font-size: 15px;
       font-weight: 700;
       outline: none;
       margin-bottom: 8px;
       background: white;
+    }
+
+    .textarea {
+      min-height: 70px;
+      resize: vertical;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
     }
 
     .main-btn {
@@ -94,37 +124,103 @@
       font-size: 16px;
       font-weight: 900;
       cursor: pointer;
-      margin-bottom: 8px;
+      margin-top: 4px;
     }
 
-    .facility-list {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-      margin-top: 10px;
+    .yellow-btn {
+      background: #f4c542;
+      color: #111;
     }
 
-    .facility-btn {
+    .danger-btn {
+      background: #b91c1c;
+      color: #ffffff;
+    }
+
+    .views-btn {
+      width: 100%;
       border: none;
       background: #f4c542;
       color: #111;
-      border-radius: 14px;
-      padding: 16px 10px;
-      font-size: 21px;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 16px;
       font-weight: 900;
       cursor: pointer;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.18);
-      text-align: center;
-      min-height: 58px;
+      margin-bottom: 8px;
     }
 
-    .facility-name {
-      display: block;
-      font-size: 10px;
+    .rights-grid {
+      display: none;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .rights-grid.active {
+      display: grid;
+    }
+
+    .check-row {
+      background: #ffffff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 9px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 13px;
       font-weight: 800;
+    }
+
+    .check-row input {
+      width: 18px;
+      height: 18px;
+    }
+
+    .employee-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .employee-card {
+      border: 1px solid #ddd;
+      border-radius: 14px;
+      background: white;
+      padding: 10px;
+    }
+
+    .employee-name {
+      font-size: 16px;
+      font-weight: 900;
+      color: #111;
+    }
+
+    .employee-meta {
+      font-size: 12px;
+      font-weight: 700;
+      color: #555;
       margin-top: 3px;
-      color: #333;
-      line-height: 1.1;
+      line-height: 1.4;
+    }
+
+    .employee-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .small-btn {
+      border: none;
+      border-radius: 10px;
+      padding: 9px;
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+      background: #eee;
     }
 
     .status {
@@ -150,8 +246,10 @@
       color: #777;
     }
 
+    .back-btn:active,
     .main-btn:active,
-    .facility-btn:active {
+    .small-btn:active,
+    .views-btn:active {
       transform: scale(0.98);
     }
   </style>
@@ -163,58 +261,88 @@
   ========================== -->
 
   <main class="app">
-    <h1 class="title">MAIN Dashboard</h1>
-    <div class="tag">Facility Layout App</div>
+    <div class="top-row">
+      <div>
+        <h1 class="title">Employees</h1>
+        <div class="tag">Main Dashboard Access</div>
+      </div>
+
+      <button class="back-btn" onclick="goBack()">Back</button>
+    </div>
 
     <section class="card-box">
-      <div class="box-title">Create New Facility</div>
+      <div class="box-title">Add / Edit Employee</div>
 
-      <input
-        id="newFacilityInput"
-        class="input"
-        type="text"
-        placeholder="Enter new facility"
-        autocomplete="off"
-      >
+      <input id="employeeId" class="input" type="text" placeholder="Employee ID" autocomplete="off">
+      <input id="employeeName" class="input" type="text" placeholder="Employee name" autocomplete="off">
 
-      <button class="main-btn" onclick="saveNewFacility()">
-        Save Facility
+      <div class="two-col">
+        <input
+          id="loginPin"
+          class="input"
+          type="password"
+          placeholder="PIN"
+          autocomplete="off"
+          inputmode="numeric"
+          maxlength="4"
+          pattern="[0-9]*"
+          oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4);"
+        >
+
+        <select id="role" class="select">
+          <option value="Admin">Admin</option>
+          <option value="Manager">Manager</option>
+          <option value="Employee">Employee</option>
+        </select>
+      </div>
+
+      <select id="allowedFacilities" class="select">
+        <option value="ALL">ALL Facilities</option>
+      </select>
+
+      <select id="defaultFacility" class="select">
+        <option value="">Default facility</option>
+      </select>
+
+      <button class="views-btn" onclick="toggleViews()" type="button">
+        Allowed Views
       </button>
+
+      <div id="rightsGrid" class="rights-grid">
+        <label class="check-row"><input id="adminAccess" type="checkbox"> Admin</label>
+        <label class="check-row"><input id="viewMainDashboard" type="checkbox" checked> Main</label>
+        <label class="check-row"><input id="viewFacilityDashboard" type="checkbox" checked> Facility</label>
+        <label class="check-row"><input id="viewFacilityInfo" type="checkbox" checked> Info</label>
+        <label class="check-row"><input id="viewEmployees" type="checkbox"> Employees</label>
+        <label class="check-row"><input id="viewSettings" type="checkbox"> Settings</label>
+        <label class="check-row"><input id="viewReports" type="checkbox"> Reports</label>
+        <label class="check-row"><input id="viewTools" type="checkbox"> Tools</label>
+        <label class="check-row"><input id="active" type="checkbox" checked> Active</label>
+      </div>
+
+      <textarea id="notes" class="textarea" placeholder="Notes"></textarea>
+
+      <button class="main-btn yellow-btn" onclick="saveEmployee()">Save Employee</button>
+      <button class="main-btn" onclick="clearForm()">Clear Form</button>
 
       <div id="statusBox" class="status"></div>
     </section>
 
     <section class="card-box">
-      <div class="box-title">Enter PIN</div>
-
-      <input
-        id="loginInput"
-        class="input"
-        type="password"
-        placeholder="Enter PIN"
-        autocomplete="off"
-        inputmode="numeric"
-        maxlength="4"
-        pattern="[0-9]*"
-        oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4);"
-      >
-    </section>
-
-    <section id="facilityList" class="facility-list">
-      <button class="facility-btn" disabled>
-        Loading
-        <span class="facility-name">Please wait</span>
-      </button>
+      <div class="box-title">Saved Employees</div>
+      <div id="employeeList" class="employee-list">
+        <div class="employee-meta">No employees added yet.</div>
+      </div>
     </section>
 
     <div class="version">
-      Updated: 2026-05-23 12:05 PM • MAIN Dashboard/index.html
+      Updated: 2026-05-23 12:20 PM • MAIN Dashboard/main-dashboard-employees.html
     </div>
   </main>
 
   <script>
     /* =========================
-       04 - GOOGLE SHEET SETTINGS
+       04 - SETTINGS
     ========================== */
 
     const SHEET_ID = "1NgaIHQopiTuTuJpKgO05gxDddRaMwg_7HusVDarcfq0";
@@ -222,41 +350,26 @@
     const FACILITY_INFO_CSV_URL =
       "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:csv&sheet=Facility_Info";
 
-    const EMPLOYEES_CSV_URL =
-      "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:csv&sheet=Employees%20";
+    const STORAGE_KEY = "facilityLayoutEmployeesV2";
 
-    const LOCAL_FACILITY_STORAGE_KEY = "facilityLayoutLocalFacilitiesV1";
-
-    let facilities = [];
     let employees = [];
+    let facilities = [];
+    let editingIndex = null;
 
     /* =========================
        05 - STARTUP
     ========================== */
 
     document.addEventListener("DOMContentLoaded", async () => {
-      await loadAppData();
-      renderFacilityButtons();
-
-      document.getElementById("newFacilityInput").addEventListener("keydown", event => {
-        if (event.key === "Enter") {
-          saveNewFacility();
-        }
-      });
+      await loadFacilitiesFromSheet();
+      loadEmployees();
+      renderFacilityDropdowns();
+      renderEmployees();
     });
 
     /* =========================
-       06 - LOAD DATA
+       06 - LOAD FACILITIES
     ========================== */
-
-    async function loadAppData() {
-      await Promise.all([
-        loadFacilitiesFromSheet(),
-        loadEmployeesFromSheet()
-      ]);
-
-      loadLocalFacilities();
-    }
 
     async function loadFacilitiesFromSheet() {
       try {
@@ -266,272 +379,250 @@
         facilities = parseCsv(csvText)
           .filter(row => normalize(row.facilityId) && normalize(row.facilityName))
           .map(row => {
-            const initials = makeInitials(row.facilityName);
-
             return {
               id: normalize(row.facilityId),
               name: normalize(row.facilityName),
-              initials: initials,
-              folder: initials,
-              source: "sheet"
+              initials: makeInitials(row.facilityName)
             };
           });
       } catch (error) {
         console.error(error);
         facilities = [];
-        showStatus("Could not load Facility_Info sheet.");
+        showStatus("Could not load current facilities.");
       }
     }
 
-    async function loadEmployeesFromSheet() {
-      try {
-        const response = await fetch(EMPLOYEES_CSV_URL);
-        const csvText = await response.text();
+    function renderFacilityDropdowns() {
+      const allowedSelect = document.getElementById("allowedFacilities");
+      const defaultSelect = document.getElementById("defaultFacility");
 
-        employees = parseCsv(csvText).filter(row => {
-          return normalize(row.employeeName) && normalize(row.loginPin);
-        });
-      } catch (error) {
-        console.error(error);
-        employees = [];
-        showStatus("Could not load Employees sheet.");
-      }
-    }
+      const facilityOptions = facilities.map(facility => {
+        return `
+          <option value="${escapeHtml(facility.initials)}">
+            ${escapeHtml(facility.initials)} - ${escapeHtml(facility.name)}
+          </option>
+        `;
+      }).join("");
 
-    function loadLocalFacilities() {
-      const saved = localStorage.getItem(LOCAL_FACILITY_STORAGE_KEY);
+      allowedSelect.innerHTML =
+        '<option value="ALL">ALL Facilities</option>' +
+        facilityOptions;
 
-      if (!saved) return;
-
-      try {
-        const localFacilities = JSON.parse(saved);
-
-        localFacilities.forEach(localFacility => {
-          const exists = facilities.some(item => {
-            return item.initials.toLowerCase() === localFacility.initials.toLowerCase() ||
-                   item.name.toLowerCase() === localFacility.name.toLowerCase();
-          });
-
-          if (!exists) {
-            facilities.push(localFacility);
-          }
-        });
-      } catch (error) {
-        console.error(error);
-      }
-    }
-
-    function saveLocalFacilities() {
-      const localFacilities = facilities.filter(facility => facility.source === "local");
-      localStorage.setItem(LOCAL_FACILITY_STORAGE_KEY, JSON.stringify(localFacilities));
+      defaultSelect.innerHTML =
+        '<option value="">Default facility</option>' +
+        facilityOptions;
     }
 
     /* =========================
-       07 - CREATE FACILITY
+       07 - LOAD AND SAVE EMPLOYEES
     ========================== */
 
-    function saveNewFacility() {
-      const input = document.getElementById("newFacilityInput");
-      const facilityName = input.value.trim();
+    function loadEmployees() {
+      const saved = localStorage.getItem(STORAGE_KEY);
 
-      if (!facilityName) {
-        showStatus("Enter a facility name first.");
+      if (!saved) {
+        employees = [];
         return;
       }
 
-      const initials = makeInitials(facilityName);
-
-      const alreadyExists = facilities.some(facility => {
-        return facility.name.toLowerCase() === facilityName.toLowerCase() ||
-               facility.initials.toLowerCase() === initials.toLowerCase();
-      });
-
-      if (alreadyExists || initials === "MD") {
-        showStatus("That facility already exists.");
-        return;
+      try {
+        employees = JSON.parse(saved);
+      } catch (error) {
+        employees = [];
       }
-
-      facilities.push({
-        id: initials,
-        name: facilityName,
-        initials: initials,
-        folder: initials,
-        source: "local"
-      });
-
-      saveLocalFacilities();
-      input.value = "";
-      renderFacilityButtons();
-      showStatus("Facility saved.");
     }
 
-    function makeInitials(name) {
-      const cleanName = String(name || "").trim();
+    function saveEmployeesToStorage() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(employees));
+    }
 
-      if (!cleanName) return "NEW";
+    /* =========================
+       08 - SAVE EMPLOYEE
+    ========================== */
 
-      if (cleanName.includes("/")) {
-        const beforeSlash = cleanName.split("/")[0].trim();
-        const cleaned = beforeSlash.replace(/[^a-zA-Z0-9]/g, "");
-        return cleaned.substring(0, 4).toUpperCase() || "NEW";
+    function saveEmployee() {
+      const employee = getEmployeeFromForm();
+
+      if (!employee.employeeName) {
+        showStatus("Enter employee name.");
+        return;
       }
 
-      const words = cleanName
+      if (!employee.loginPin) {
+        showStatus("Enter PIN.");
+        return;
+      }
+
+      if (!employee.employeeId) {
+        employee.employeeId = makeEmployeeId(employee.employeeName);
+      }
+
+      const duplicatePin = employees.some((item, index) => {
+        return index !== editingIndex && normalizePin(item.loginPin) === normalizePin(employee.loginPin);
+      });
+
+      if (duplicatePin) {
+        showStatus("That PIN is already used.");
+        return;
+      }
+
+      if (editingIndex === null) {
+        employees.push(employee);
+        showStatus("Employee saved.");
+      } else {
+        employees[editingIndex] = employee;
+        showStatus("Employee updated.");
+      }
+
+      saveEmployeesToStorage();
+      renderEmployees();
+      clearForm();
+    }
+
+    function getEmployeeFromForm() {
+      return {
+        employeeId: getValue("employeeId"),
+        employeeName: getValue("employeeName"),
+        loginPin: getValue("loginPin"),
+        role: getValue("role"),
+        adminAccess: getCheckedValue("adminAccess"),
+        viewMainDashboard: getCheckedValue("viewMainDashboard"),
+        viewFacilityDashboard: getCheckedValue("viewFacilityDashboard"),
+        viewFacilityInfo: getCheckedValue("viewFacilityInfo"),
+        viewEmployees: getCheckedValue("viewEmployees"),
+        viewSettings: getCheckedValue("viewSettings"),
+        viewReports: getCheckedValue("viewReports"),
+        viewTools: getCheckedValue("viewTools"),
+        allowedFacilities: getValue("allowedFacilities") || "ALL",
+        defaultFacility: getValue("defaultFacility"),
+        active: getCheckedValue("active"),
+        notes: getValue("notes"),
+        lastUpdated: new Date().toLocaleString()
+      };
+    }
+
+    function makeEmployeeId(name) {
+      const initials = String(name || "")
         .replace(/[^a-zA-Z0-9 ]/g, " ")
         .split(" ")
-        .filter(Boolean);
-
-      if (!words.length) return "NEW";
-
-      if (words.length === 1) {
-        return words[0].substring(0, 4).toUpperCase();
-      }
-
-      return words
+        .filter(Boolean)
         .map(word => word[0])
         .join("")
         .substring(0, 4)
         .toUpperCase();
+
+      const number = String(employees.length + 1).padStart(3, "0");
+      return (initials || "EMP") + "_" + number;
     }
 
     /* =========================
-       08 - RENDER BUTTONS
+       09 - RENDER EMPLOYEES
     ========================== */
 
-    function renderFacilityButtons() {
-      const facilityList = document.getElementById("facilityList");
+    function renderEmployees() {
+      const list = document.getElementById("employeeList");
 
-      const mainDashboardButton = `
-        <button class="facility-btn" onclick="openMainDashboardUsers()">
-          MD
-          <span class="facility-name">MAIN Dashboard</span>
-        </button>
-      `;
+      if (!employees.length) {
+        list.innerHTML = '<div class="employee-meta">No employees added yet.</div>';
+        return;
+      }
 
-      const facilityButtons = facilities.map((facility, index) => {
+      list.innerHTML = employees.map((employee, index) => {
         return `
-          <button class="facility-btn" onclick="openFacility(${index})">
-            ${escapeHtml(facility.initials)}
-            <span class="facility-name">${escapeHtml(facility.name)}</span>
-          </button>
+          <div class="employee-card">
+            <div class="employee-name">${escapeHtml(employee.employeeName)}</div>
+            <div class="employee-meta">
+              ID: ${escapeHtml(employee.employeeId)}<br>
+              Role: ${escapeHtml(employee.role)} • Active: ${escapeHtml(employee.active)}<br>
+              Facilities: ${escapeHtml(employee.allowedFacilities || "")}<br>
+              Default: ${escapeHtml(employee.defaultFacility || "")}<br>
+              PIN: ****
+            </div>
+
+            <div class="employee-actions">
+              <button class="small-btn" onclick="editEmployee(${index})">Edit</button>
+              <button class="small-btn danger-btn" onclick="deleteEmployee(${index})">Delete</button>
+            </div>
+          </div>
         `;
       }).join("");
-
-      facilityList.innerHTML = mainDashboardButton + facilityButtons;
     }
 
     /* =========================
-       09 - PIN CHECK
+       10 - EDIT AND DELETE
     ========================== */
 
-    function getPin() {
-      return document.getElementById("loginInput").value.trim();
-    }
-
-    function getLoggedInEmployee() {
-      const pin = getPin();
-
-      if (!pin) {
-        showStatus("Enter PIN first.");
-        return null;
-      }
-
-      const employee = employees.find(row => {
-        return normalizePin(row.loginPin) === normalizePin(pin) &&
-               yesNo(row.active) !== "no";
-      });
-
-      if (!employee) {
-        showStatus("PIN not found or inactive.");
-        return null;
-      }
-
-      return employee;
-    }
-
-    function normalizePin(value) {
-      return String(value || "")
-        .replace(/\.0$/, "")
-        .replace(/[^0-9]/g, "");
-    }
-
-    /* =========================
-       10 - NAVIGATION
-    ========================== */
-
-    function openMainDashboardUsers() {
-      const employee = getLoggedInEmployee();
+    function editEmployee(index) {
+      const employee = employees[index];
 
       if (!employee) return;
 
-      const canOpen =
-        yesNo(employee.adminAccess) === "yes" ||
-        yesNo(employee.viewEmployees) === "yes" ||
-        yesNo(employee.viewMainDashboard) === "yes";
+      editingIndex = index;
 
-      if (!canOpen) {
-        showStatus("No access to MAIN Dashboard users.");
-        return;
-      }
+      setValue("employeeId", employee.employeeId);
+      setValue("employeeName", employee.employeeName);
+      setValue("loginPin", employee.loginPin);
+      setValue("role", employee.role);
+      setValue("allowedFacilities", employee.allowedFacilities || "ALL");
+      setValue("defaultFacility", employee.defaultFacility);
+      setValue("notes", employee.notes);
 
-      sessionStorage.setItem("loggedInEmployeeName", normalize(employee.employeeName));
-      sessionStorage.setItem("loggedInEmployeeRole", normalize(employee.role));
+      setCheckedFromValue("adminAccess", employee.adminAccess);
+      setCheckedFromValue("viewMainDashboard", employee.viewMainDashboard);
+      setCheckedFromValue("viewFacilityDashboard", employee.viewFacilityDashboard);
+      setCheckedFromValue("viewFacilityInfo", employee.viewFacilityInfo);
+      setCheckedFromValue("viewEmployees", employee.viewEmployees);
+      setCheckedFromValue("viewSettings", employee.viewSettings);
+      setCheckedFromValue("viewReports", employee.viewReports);
+      setCheckedFromValue("viewTools", employee.viewTools);
+      setCheckedFromValue("active", employee.active);
 
-      window.location.href = "main-dashboard-employees.html";
+      showStatus("Editing employee.");
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    function openFacility(index) {
-      const employee = getLoggedInEmployee();
-
-      if (!employee) return;
-
-      const facility = facilities[index];
-
-      if (!facility) {
-        showStatus("Facility not found.");
-        return;
-      }
-
-      if (yesNo(employee.viewFacilityDashboard) !== "yes" && yesNo(employee.adminAccess) !== "yes") {
-        showStatus("No access to facility dashboard.");
-        return;
-      }
-
-      if (!employeeCanAccessFacility(employee, facility)) {
-        showStatus("No access to this facility.");
-        return;
-      }
-
-      sessionStorage.setItem("loggedInEmployeeName", normalize(employee.employeeName));
-      sessionStorage.setItem("loggedInEmployeeRole", normalize(employee.role));
-      sessionStorage.setItem("selectedFacilityId", facility.id);
-      sessionStorage.setItem("selectedFacilityName", facility.name);
-
-      const url =
-        "../" + encodeURIComponent(facility.folder) + "/facilityinformation" + encodeURIComponent(facility.folder) + ".html" +
-        "?facilityId=" + encodeURIComponent(facility.id) +
-        "&facilityName=" + encodeURIComponent(facility.name);
-
-      window.location.href = url;
+    function deleteEmployee(index) {
+      employees.splice(index, 1);
+      saveEmployeesToStorage();
+      renderEmployees();
+      clearForm();
+      showStatus("Employee deleted.");
     }
 
-    function employeeCanAccessFacility(employee, facility) {
-      const allowed = normalize(employee.allowedFacilities).toUpperCase();
+    function clearForm() {
+      editingIndex = null;
 
-      if (!allowed || allowed === "ALL") return true;
+      setValue("employeeId", "");
+      setValue("employeeName", "");
+      setValue("loginPin", "");
+      setValue("role", "Admin");
+      setValue("allowedFacilities", "ALL");
+      setValue("defaultFacility", "");
+      setValue("notes", "");
 
-      const parts = allowed
-        .split(/[,\|;/]+/)
-        .map(item => item.trim().toUpperCase())
-        .filter(Boolean);
+      document.getElementById("adminAccess").checked = false;
+      document.getElementById("viewMainDashboard").checked = true;
+      document.getElementById("viewFacilityDashboard").checked = true;
+      document.getElementById("viewFacilityInfo").checked = true;
+      document.getElementById("viewEmployees").checked = false;
+      document.getElementById("viewSettings").checked = false;
+      document.getElementById("viewReports").checked = false;
+      document.getElementById("viewTools").checked = false;
+      document.getElementById("active").checked = true;
 
-      return parts.includes(facility.initials.toUpperCase()) ||
-             parts.includes(facility.id.toUpperCase()) ||
-             parts.includes(facility.name.toUpperCase());
+      document.getElementById("rightsGrid").classList.remove("active");
     }
 
     /* =========================
-       11 - CSV PARSER
+       11 - VIEW TOGGLE
+    ========================== */
+
+    function toggleViews() {
+      document.getElementById("rightsGrid").classList.toggle("active");
+    }
+
+    /* =========================
+       12 - CSV PARSER
     ========================== */
 
     function parseCsv(csvText) {
@@ -587,8 +678,24 @@
     }
 
     /* =========================
-       12 - STATUS AND HELPERS
+       13 - HELPERS
     ========================== */
+
+    function getValue(id) {
+      return document.getElementById(id).value.trim();
+    }
+
+    function setValue(id, value) {
+      document.getElementById(id).value = value || "";
+    }
+
+    function getCheckedValue(id) {
+      return document.getElementById(id).checked ? "yes" : "no";
+    }
+
+    function setCheckedFromValue(id, value) {
+      document.getElementById(id).checked = String(value || "").toLowerCase() === "yes";
+    }
 
     function showStatus(message) {
       const statusBox = document.getElementById("statusBox");
@@ -597,15 +704,50 @@
 
       setTimeout(() => {
         statusBox.classList.remove("active");
-      }, 3000);
+      }, 2500);
+    }
+
+    function makeInitials(name) {
+      const cleanName = String(name || "").trim();
+
+      if (!cleanName) return "NEW";
+
+      if (cleanName.includes("/")) {
+        const beforeSlash = cleanName.split("/")[0].trim();
+        const cleaned = beforeSlash.replace(/[^a-zA-Z0-9]/g, "");
+        return cleaned.substring(0, 4).toUpperCase() || "NEW";
+      }
+
+      const words = cleanName
+        .replace(/[^a-zA-Z0-9 ]/g, " ")
+        .split(" ")
+        .filter(Boolean);
+
+      if (!words.length) return "NEW";
+
+      if (words.length === 1) {
+        return words[0].substring(0, 4).toUpperCase();
+      }
+
+      return words
+        .map(word => word[0])
+        .join("")
+        .substring(0, 4)
+        .toUpperCase();
     }
 
     function normalize(value) {
       return String(value || "").trim();
     }
 
-    function yesNo(value) {
-      return String(value || "").trim().toLowerCase();
+    function normalizePin(value) {
+      return String(value || "")
+        .replace(/\.0$/, "")
+        .replace(/[^0-9]/g, "");
+    }
+
+    function goBack() {
+      window.history.back();
     }
 
     function escapeHtml(value) {
