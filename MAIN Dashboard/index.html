@@ -97,12 +97,12 @@
       color: #111;
       border-radius: 14px;
       padding: 16px 10px;
-      font-size: 21px;
+      font-size: 17px;
       font-weight: 900;
       cursor: pointer;
       box-shadow: 0 3px 8px rgba(0,0,0,0.18);
       text-align: center;
-      min-height: 58px;
+      min-height: 74px;
     }
 
     .facility-btn.black-btn {
@@ -114,7 +114,7 @@
       display: block;
       font-size: 10px;
       font-weight: 800;
-      margin-top: 3px;
+      margin-top: 5px;
       color: #333;
       line-height: 1.1;
     }
@@ -247,7 +247,7 @@
     </section>
 
     <div class="version">
-      Updated: 2026-05-23 01:35 PM • MAIN Dashboard/index.html
+      Updated: 2026-05-23 01:45 PM • MAIN Dashboard/index.html
     </div>
   </main>
 
@@ -499,10 +499,10 @@
     function renderFacilityButtons() {
       const facilityList = document.getElementById("facilityList");
 
-      const mainDashboardButton = `
+      const manageEmployeesButton = `
         <button class="facility-btn" onclick="openMainDashboardUsers()">
-          MD
-          <span class="facility-name">MAIN Dashboard</span>
+          Manage Employees
+          <span class="facility-name">Users / Access</span>
         </button>
       `;
 
@@ -522,7 +522,7 @@
         `;
       }).join("");
 
-      facilityList.innerHTML = mainDashboardButton + newFacilityButton + facilityButtons;
+      facilityList.innerHTML = manageEmployeesButton + newFacilityButton + facilityButtons;
     }
 
     /* =========================
@@ -575,7 +575,7 @@
         yesNo(employee.viewMainDashboard) === "yes";
 
       if (!canOpen) {
-        showStatus("No access to MAIN Dashboard users.");
+        showStatus("No access to manage employees.");
         return;
       }
 
