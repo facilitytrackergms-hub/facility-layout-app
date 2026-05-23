@@ -214,13 +214,17 @@
         <option value="">Create new facility</option>
       </select>
 
-      <input
-        id="loginInput"
-        class="input"
-        type="password"
-        placeholder="Enter login"
-        autocomplete="off"
-      >
+<input
+  id="loginInput"
+  class="input"
+  type="password"
+  placeholder="Enter 4 digit login"
+  autocomplete="off"
+  inputmode="numeric"
+  maxlength="4"
+  pattern="[0-9]*"
+  oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4);"
+>
 
       <button class="login-btn" onclick="loginToSelectedFacility()">
         Login
