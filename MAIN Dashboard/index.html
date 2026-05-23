@@ -1,19 +1,113 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="refresh" content="0; url=main-dashboard-live.html?v=20260523-0235">
-  <title>MAIN Dashboard</title>
-  <script>
-    window.location.replace("main-dashboard-live.html?v=20260523-0235");
-  </script>
+  <title>Employees View</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 10px;
+    }
+    .card {
+      width: 100%;
+      max-width: 460px;
+      background: white;
+      border-radius: 22px;
+      padding: 14px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.18);
+    }
+    h1 {
+      text-align: center;
+      margin: 0 0 12px;
+      font-size: 28px;
+      color: #1847d1;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      margin: 5px 0;
+      border-radius: 14px;
+      border: none;
+      font-size: 18px;
+      font-weight: bold;
+      background: #1976d2;
+      color: white;
+      cursor: pointer;
+    }
+    button.back {
+      background: #555;
+    }
+    .employee-item {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 10px;
+      margin: 8px 0;
+      background: #fafafa;
+    }
+    .version-label {
+      text-align: center;
+      font-size: 12px;
+      font-weight: bold;
+      color: #777;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
-  <main>
-    <h1>MAIN Dashboard</h1>
-    <p>Opening MAIN Dashboard...</p>
-    <p>Updated: 2026-05-23 02:35 PM | MAIN Dashboard/index.html</p>
-  </main>
+  <div class="card">
+    <h1>Employees</h1>
+
+    <div id="employeesList">
+      <!-- Employee entries will be loaded here -->
+    </div>
+
+    <button class="back" onclick="goBack()">Back</button>
+    <div class="version-label">Updated: 2026-05-23 09:10 AM | employees.html</div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBgq_ooBeEN4noEyIxYPLVokgM6RjCO648",
+      authDomain: "gms-task-tracker.firebaseapp.com",
+      projectId: "gms-task-tracker",
+      storageBucket: "gms-task-tracker.firebasestorage.app",
+      messagingSenderId: "790880979860",
+      appId: "1:790880979860:web:6faee2a6e56955af3c1d81",
+      measurementId: "G-5TRHQMS039"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function loadEmployees() {
+      const list = document.getElementById("employeesList");
+      list.innerHTML = "Loading...";
+
+      const snap = await getDocs(collection(db, "employees"));
+      list.innerHTML = "";
+
+      snap.docs.forEach(doc => {
+        const data = doc.data();
+        const div = document.createElement("div");
+        div.className = "employee-item";
+        div.innerHTML = `<b>${data.employeeName || "Unnamed"}</b><br>Role: ${data.role || ""}<br>Schedule: ${data.assignment || ""}`;
+        list.appendChild(div);
+      });
+    }
+
+    function goBack() {
+      window.history.back();
+    }
+
+    loadEmployees();
+  </script>
 </body>
 </html>
