@@ -566,28 +566,49 @@
        11 - NAVIGATION
     ========================== */
 
-    function openMainDashboardUsers() {
-      const employee = getLoggedInEmployee();
+  // =========================
+// HELPER: interpret yes/no values from sheet
+// =========================
+function yesNo(value) {
+  const clean = String(value || "").trim().toLowerCase();
+  if (clean === "true" || clean === "1" || clean === "x" || clean === "checked") return "yes";
+  return clean;
+}
 
-      if (!employee) return;
+// =========================
+// OPEN EMPLOYEES DASHBOARD DYNAMICALLY
+// =========================
+function openMainDashboardUsers() {
+  const pin = document.getElementById("loginInput").value.trim();
+  if (!pin) {
+    showStatus("Enter PIN first.");
+    return;
+  }
 
-      const canOpen =
-        yesNo(employee.adminAccess) === "yes" ||
-        yesNo(employee.viewEmployees) === "yes" ||
-        yesNo(employee.viewMainDashboard) === "yes" ||
-        normalize(employee.role).toLowerCase() === "admin";
+  const employee = employees.find(row => normalizePin(row.loginPin) === normalizePin(pin) && yesNo(row.active) !== "no");
+  if (!employee) {
+    showStatus("PIN not found or inactive.");
+    return;
+  }
 
-      if (!canOpen) {
-        showStatus("No access to manage employees.");
-        return;
-      }
+  // Check all access fields dynamically from sheet
+  const canOpen =
+    yesNo(employee.adminAccess) === "yes" ||
+    yesNo(employee.viewEmployees) === "yes" ||
+    yesNo(employee.viewMainDashboard) === "yes";
 
-      sessionStorage.setItem("loggedInEmployeeName", normalize(employee.employeeName));
-      sessionStorage.setItem("loggedInEmployeeRole", normalize(employee.role));
+  if (!canOpen) {
+    showStatus("No access to manage employees.");
+    return;
+  }
 
-      window.location.href = "main-dashboard-employees.html";
-    }
+  // Save the logged-in employee info in session
+  sessionStorage.setItem("loggedInEmployeeName", normalize(employee.employeeName));
+  sessionStorage.setItem("loggedInEmployeeRole", normalize(employee.role));
 
+  // Navigate to employees dashboard
+  window.location.href = "main-dashboard-employees.html";
+}
     function openFacility(index) {
       const employee = getLoggedInEmployee();
 
