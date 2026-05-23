@@ -102,12 +102,12 @@
       cursor: pointer;
       box-shadow: 0 3px 8px rgba(0,0,0,0.18);
       text-align: center;
-      min-height: 76px;
+      min-height: 58px;
     }
 
-    .add-btn {
-      background: #f4c542;
-      color: #111;
+    .facility-btn.black-btn {
+      background: #222;
+      color: #ffffff;
     }
 
     .facility-name {
@@ -117,6 +117,10 @@
       margin-top: 3px;
       color: #333;
       line-height: 1.1;
+    }
+
+    .black-btn .facility-name {
+      color: #ffffff;
     }
 
     .status {
@@ -135,48 +139,49 @@
       display: block;
     }
 
-    .popup-cover {
+    .modal-backdrop {
       display: none;
       position: fixed;
       inset: 0;
       background: rgba(0, 0, 0, 0.45);
+      padding: 16px;
       align-items: center;
       justify-content: center;
-      padding: 16px;
-      z-index: 20;
+      z-index: 99;
     }
 
-    .popup-cover.active {
+    .modal-backdrop.active {
       display: flex;
     }
 
-    .popup-card {
+    .modal-card {
       width: 100%;
       max-width: 390px;
       background: white;
       border-radius: 18px;
       padding: 14px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+      box-shadow: 0 5px 22px rgba(0, 0, 0, 0.28);
     }
 
-    .popup-title {
+    .modal-title {
       font-size: 20px;
       font-weight: 900;
       text-align: center;
       margin-bottom: 12px;
     }
 
-    .popup-actions {
+    .modal-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 8px;
+      margin-top: 4px;
     }
 
-    .popup-btn {
+    .modal-btn {
       border: none;
       border-radius: 12px;
       padding: 12px;
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 900;
       cursor: pointer;
     }
@@ -188,7 +193,7 @@
 
     .cancel-btn {
       background: #222;
-      color: white;
+      color: #ffffff;
     }
 
     .version {
@@ -199,7 +204,7 @@
     }
 
     .facility-btn:active,
-    .popup-btn:active {
+    .modal-btn:active {
       transform: scale(0.98);
     }
   </style>
@@ -242,7 +247,7 @@
     </section>
 
     <div class="version">
-      Updated: 2026-05-23 01:25 PM • MAIN Dashboard/index.html
+      Updated: 2026-05-23 01:35 PM • MAIN Dashboard/index.html
     </div>
   </main>
 
@@ -250,12 +255,13 @@
        04 - NEW FACILITY POPUP
   ========================== -->
 
-  <div id="newFacilityPopup" class="popup-cover">
-    <div class="popup-card">
-      <div class="popup-title">New Facility</div>
+  <div id="newFacilityModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-title">Enter New Facility</div>
 
       <input
         id="newFacilityInput"
+        name="newFacilityNameField"
         class="input"
         type="text"
         placeholder="Enter new facility name"
@@ -263,9 +269,9 @@
         value=""
       >
 
-      <div class="popup-actions">
-        <button class="popup-btn save-btn" onclick="saveNewFacility()">Save</button>
-        <button class="popup-btn cancel-btn" onclick="closeNewFacilityPopup()">Cancel</button>
+      <div class="modal-actions">
+        <button class="modal-btn cancel-btn" onclick="closeNewFacilityPopup()">Cancel</button>
+        <button class="modal-btn save-btn" onclick="saveNewFacility()">Save</button>
       </div>
     </div>
   </div>
@@ -293,10 +299,10 @@
     ========================== */
 
     document.addEventListener("DOMContentLoaded", async () => {
-      clearPinBox();
+      clearInputsOnLoad();
       await loadAppData();
       renderFacilityButtons();
-      clearPinBox();
+      clearInputsOnLoad();
 
       document.getElementById("newFacilityInput").addEventListener("keydown", event => {
         if (event.key === "Enter") {
@@ -305,12 +311,18 @@
       });
     });
 
-    function clearPinBox() {
-      const loginInput = document.getElementById("loginInput");
+    function clearInputsOnLoad() {
+      const pinInput = document.getElementById("loginInput");
+      const facilityInput = document.getElementById("newFacilityInput");
 
-      if (loginInput) {
-        loginInput.value = "";
-        loginInput.placeholder = "Enter PIN";
+      if (pinInput) {
+        pinInput.value = "";
+        pinInput.placeholder = "Enter PIN";
+      }
+
+      if (facilityInput) {
+        facilityInput.value = "";
+        facilityInput.placeholder = "Enter new facility name";
       }
     }
 
@@ -400,19 +412,19 @@
     ========================== */
 
     function openNewFacilityPopup() {
-      const popup = document.getElementById("newFacilityPopup");
+      const modal = document.getElementById("newFacilityModal");
       const input = document.getElementById("newFacilityInput");
 
       input.value = "";
-      popup.classList.add("active");
+      modal.classList.add("active");
 
       setTimeout(() => {
         input.focus();
-      }, 50);
+      }, 100);
     }
 
     function closeNewFacilityPopup() {
-      document.getElementById("newFacilityPopup").classList.remove("active");
+      document.getElementById("newFacilityModal").classList.remove("active");
       document.getElementById("newFacilityInput").value = "";
     }
 
@@ -446,9 +458,38 @@
       });
 
       saveLocalFacilities();
-      closeNewFacilityPopup();
       renderFacilityButtons();
+      closeNewFacilityPopup();
       showStatus("Facility saved.");
+    }
+
+    function makeInitials(name) {
+      const cleanName = String(name || "").trim();
+
+      if (!cleanName) return "NEW";
+
+      if (cleanName.includes("/")) {
+        const beforeSlash = cleanName.split("/")[0].trim();
+        const cleaned = beforeSlash.replace(/[^a-zA-Z0-9]/g, "");
+        return cleaned.substring(0, 4).toUpperCase() || "NEW";
+      }
+
+      const words = cleanName
+        .replace(/[^a-zA-Z0-9 ]/g, " ")
+        .split(" ")
+        .filter(Boolean);
+
+      if (!words.length) return "NEW";
+
+      if (words.length === 1) {
+        return words[0].substring(0, 4).toUpperCase();
+      }
+
+      return words
+        .map(word => word[0])
+        .join("")
+        .substring(0, 4)
+        .toUpperCase();
     }
 
     /* =========================
@@ -465,8 +506,8 @@
         </button>
       `;
 
-      const addFacilityButton = `
-        <button class="facility-btn add-btn" onclick="openNewFacilityPopup()">
+      const newFacilityButton = `
+        <button class="facility-btn black-btn" onclick="openNewFacilityPopup()">
           +
           <span class="facility-name">Enter New Facility</span>
         </button>
@@ -481,7 +522,7 @@
         `;
       }).join("");
 
-      facilityList.innerHTML = mainDashboardButton + addFacilityButton + facilityButtons;
+      facilityList.innerHTML = mainDashboardButton + newFacilityButton + facilityButtons;
     }
 
     /* =========================
@@ -651,37 +692,8 @@
     }
 
     /* =========================
-       13 - HELPERS
+       13 - STATUS AND HELPERS
     ========================== */
-
-    function makeInitials(name) {
-      const cleanName = String(name || "").trim();
-
-      if (!cleanName) return "NEW";
-
-      if (cleanName.includes("/")) {
-        const beforeSlash = cleanName.split("/")[0].trim();
-        const cleaned = beforeSlash.replace(/[^a-zA-Z0-9]/g, "");
-        return cleaned.substring(0, 4).toUpperCase() || "NEW";
-      }
-
-      const words = cleanName
-        .replace(/[^a-zA-Z0-9 ]/g, " ")
-        .split(" ")
-        .filter(Boolean);
-
-      if (!words.length) return "NEW";
-
-      if (words.length === 1) {
-        return words[0].substring(0, 4).toUpperCase();
-      }
-
-      return words
-        .map(word => word[0])
-        .join("")
-        .substring(0, 4)
-        .toUpperCase();
-    }
 
     function showStatus(message) {
       const statusBox = document.getElementById("statusBox");
