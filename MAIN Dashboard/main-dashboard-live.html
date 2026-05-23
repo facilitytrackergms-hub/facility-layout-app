@@ -7,9 +7,9 @@
   <title>MAIN Dashboard</title>
 
   <style>
-    /* =========================
-       02 - GLOBAL STYLE (UNTOUCHED)
-    ========================== */
+    /* ==========================================================================
+                                   MAIN DASHBOARD                               
+       ========================================================================== */
     * { box-sizing: border-box; }
     body { margin: 0; font-family: Arial, sans-serif; background: #f2f2f2; min-height: 100vh; padding: 10px; display: flex; justify-content: center; align-items: flex-start; }
     .app { width: 100%; max-width: 430px; background: #ffffff; border-radius: 18px; padding: 14px; box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18); }
@@ -35,6 +35,9 @@
     .cancel-btn { background: #222; color: #ffffff; }
     .version { margin-top: 14px; text-align: center; font-size: 11px; color: #777; }
     .facility-btn:active, .modal-btn:active { transform: scale(0.98); }
+    /* ==========================================================================
+                                   MAIN DASHBOARD                               
+       ========================================================================== */
   </style>
 
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -96,9 +99,9 @@
   </div>
 
   <script>
-    /* =========================
-       05 - FIREBASE CONFIGURATION
-    ========================== */
+    /* ==========================================================================
+                               FIREBASE CONFIGURATION                           
+       ========================================================================== */
     const firebaseConfig = {
       apiKey: "YOUR_API_KEY",
       authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -113,10 +116,13 @@
 
     let facilities = [];
     let employees = [];
+    /* ==========================================================================
+                               FIREBASE CONFIGURATION                           
+       ========================================================================== */
 
-    /* =========================
-       06 - STARTUP
-    ========================== */
+    /* ==========================================================================
+                                      STARTUP                                   
+       ========================================================================== */
     document.addEventListener("DOMContentLoaded", async () => {
       clearInputsOnLoad();
       renderFacilityButtons();
@@ -138,10 +144,13 @@
       if (pinInput) pinInput.value = "";
       if (facilityInput) facilityInput.value = "";
     }
+    /* ==========================================================================
+                                      STARTUP                                   
+       ========================================================================== */
 
-    /* =========================
-       07 - LOAD DATA FROM FIREBASE
-    ========================== */
+    /* ==========================================================================
+                             LOAD DATA FROM FIREBASE                            
+       ========================================================================== */
     async function loadAppData() {
       await Promise.all([
         loadFacilitiesFromFirebase(),
@@ -197,10 +206,13 @@
         showStatus("Could not load employees database.");
       }
     }
+    /* ==========================================================================
+                             LOAD DATA FROM FIREBASE                            
+       ========================================================================== */
 
-    /* =========================
-       08 - NEW FACILITY POPUP & SAVE
-    ========================== */
+    /* ==========================================================================
+                           NEW FACILITY POPUP & SAVE                            
+       ========================================================================== */
     function openNewFacilityPopup() {
       const modal = document.getElementById("newFacilityModal");
       const input = document.getElementById("newFacilityInput");
@@ -264,10 +276,13 @@
       if (words.length === 1) return words[0].substring(0, 4).toUpperCase();
       return words.map(word => word[0]).join("").substring(0, 4).toUpperCase();
     }
+    /* ==========================================================================
+                           NEW FACILITY POPUP & SAVE                            
+       ========================================================================== */
 
-    /* =========================
-       09 - RENDER BUTTONS (UNTOUCHED)
-    ========================== */
+    /* ==========================================================================
+                                 RENDER BUTTONS                                 
+       ========================================================================== */
     function renderFacilityButtons() {
       const facilityList = document.getElementById("facilityList");
       const manageEmployeesButton = `
@@ -293,10 +308,13 @@
 
       facilityList.innerHTML = manageEmployeesButton + newFacilityButton + facilityButtons;
     }
+    /* ==========================================================================
+                                 RENDER BUTTONS                                 
+       ========================================================================== */
 
-    /* =========================
-       10 - PIN CHECK (UNTOUCHED)
-    ========================== */
+    /* ==========================================================================
+                                   PIN CHECK                                    
+       ========================================================================== */
     function getPin() { return document.getElementById("loginInput").value.trim(); }
 
     function getLoggedInEmployee() {
@@ -310,10 +328,13 @@
     }
 
     function normalizePin(value) { return String(value || "").replace(/\.0$/, "").replace(/[^0-9]/g, ""); }
+    /* ==========================================================================
+                                   PIN CHECK                                    
+       ========================================================================== */
 
-    /* =========================
-       11 - NAVIGATION (UNTOUCHED)
-    ========================== */
+    /* ==========================================================================
+                                   NAVIGATION                                   
+       ========================================================================== */
     function openMainDashboardUsers() {
       const employee = getLoggedInEmployee();
       if (!employee) return;
@@ -349,10 +370,13 @@
       const parts = allowed.split(/[,\|;/]+/).map(item => item.trim().toUpperCase()).filter(Boolean);
       return parts.includes(facility.initials.toUpperCase()) || parts.includes(facility.id.toUpperCase()) || parts.includes(facility.name.toUpperCase());
     }
+    /* ==========================================================================
+                                   NAVIGATION                                   
+       ========================================================================== */
 
-    /* =========================
-       12 - STATUS AND HELPERS (UNTOUCHED)
-    ========================== */
+    /* ==========================================================================
+                               STATUS AND HELPERS                               
+       ========================================================================== */
     function showStatus(message) {
       const statusBox = document.getElementById("statusBox");
       statusBox.innerText = message;
@@ -369,6 +393,9 @@
     function escapeHtml(value) {
       return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
+    /* ==========================================================================
+                               STATUS AND HELPERS                               
+       ========================================================================== */
   </script>
 </body>
 </html>
