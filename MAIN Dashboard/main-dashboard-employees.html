@@ -137,11 +137,28 @@
       color: #ffffff;
     }
 
+    .views-btn {
+      width: 100%;
+      border: none;
+      background: #f4c542;
+      color: #111;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+
     .rights-grid {
-      display: grid;
+      display: none;
       grid-template-columns: 1fr 1fr;
       gap: 8px;
       margin-bottom: 8px;
+    }
+
+    .rights-grid.active {
+      display: grid;
     }
 
     .check-row {
@@ -231,7 +248,8 @@
 
     .back-btn:active,
     .main-btn:active,
-    .small-btn:active {
+    .small-btn:active,
+    .views-btn:active {
       transform: scale(0.98);
     }
   </style>
@@ -263,7 +281,7 @@
           id="loginPin"
           class="input"
           type="password"
-          placeholder="4 digit PIN"
+          placeholder="PIN"
           autocomplete="off"
           inputmode="numeric"
           maxlength="4"
@@ -278,10 +296,19 @@
         </select>
       </div>
 
-      <input id="allowedFacilities" class="input" type="text" placeholder="Allowed facilities, example: ALL or GMS" autocomplete="off">
-      <input id="defaultFacility" class="input" type="text" placeholder="Default facility, example: GMS" autocomplete="off">
+      <select id="allowedFacilities" class="select">
+        <option value="ALL">ALL Facilities</option>
+      </select>
 
-      <div class="rights-grid">
+      <select id="defaultFacility" class="select">
+        <option value="">Default facility</option>
+      </select>
+
+      <button class="views-btn" onclick="toggleViews()" type="button">
+        Allowed Views
+      </button>
+
+      <div id="rightsGrid" class="rights-grid">
         <label class="check-row"><input id="adminAccess" type="checkbox"> Admin</label>
         <label class="check-row"><input id="viewMainDashboard" type="checkbox" checked> Main</label>
         <label class="check-row"><input id="viewFacilityDashboard" type="checkbox" checked> Facility</label>
@@ -309,31 +336,85 @@
     </section>
 
     <div class="version">
-      Updated: 2026-05-23 11:20 AM • MAIN Dashboard/main-dashboard-employees.html
+      Updated: 2026-05-23 12:20 PM • MAIN Dashboard/main-dashboard-employees.html
     </div>
   </main>
 
   <script>
     /* =========================
-       04 - STORAGE
+       04 - SETTINGS
     ========================== */
 
-    const STORAGE_KEY = "facilityLayoutEmployeesV1";
+    const SHEET_ID = "1NgaIHQopiTuTuJpKgO05gxDddRaMwg_7HusVDarcfq0";
+
+    const FACILITY_INFO_CSV_URL =
+      "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:csv&sheet=Facility_Info";
+
+    const STORAGE_KEY = "facilityLayoutEmployeesV2";
 
     let employees = [];
+    let facilities = [];
     let editingIndex = null;
 
     /* =========================
        05 - STARTUP
     ========================== */
 
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
+      await loadFacilitiesFromSheet();
       loadEmployees();
+      renderFacilityDropdowns();
       renderEmployees();
     });
 
     /* =========================
-       06 - LOAD AND SAVE
+       06 - LOAD FACILITIES
+    ========================== */
+
+    async function loadFacilitiesFromSheet() {
+      try {
+        const response = await fetch(FACILITY_INFO_CSV_URL);
+        const csvText = await response.text();
+
+        facilities = parseCsv(csvText)
+          .filter(row => normalize(row.facilityId) && normalize(row.facilityName))
+          .map(row => {
+            return {
+              id: normalize(row.facilityId),
+              name: normalize(row.facilityName),
+              initials: makeInitials(row.facilityName)
+            };
+          });
+      } catch (error) {
+        console.error(error);
+        facilities = [];
+        showStatus("Could not load current facilities.");
+      }
+    }
+
+    function renderFacilityDropdowns() {
+      const allowedSelect = document.getElementById("allowedFacilities");
+      const defaultSelect = document.getElementById("defaultFacility");
+
+      const facilityOptions = facilities.map(facility => {
+        return `
+          <option value="${escapeHtml(facility.initials)}">
+            ${escapeHtml(facility.initials)} - ${escapeHtml(facility.name)}
+          </option>
+        `;
+      }).join("");
+
+      allowedSelect.innerHTML =
+        '<option value="ALL">ALL Facilities</option>' +
+        facilityOptions;
+
+      defaultSelect.innerHTML =
+        '<option value="">Default facility</option>' +
+        facilityOptions;
+    }
+
+    /* =========================
+       07 - LOAD AND SAVE EMPLOYEES
     ========================== */
 
     function loadEmployees() {
@@ -356,7 +437,7 @@
     }
 
     /* =========================
-       07 - SAVE EMPLOYEE
+       08 - SAVE EMPLOYEE
     ========================== */
 
     function saveEmployee() {
@@ -367,8 +448,8 @@
         return;
       }
 
-      if (!employee.loginPin || employee.loginPin.length !== 4) {
-        showStatus("Enter a 4 digit PIN.");
+      if (!employee.loginPin) {
+        showStatus("Enter PIN.");
         return;
       }
 
@@ -377,7 +458,7 @@
       }
 
       const duplicatePin = employees.some((item, index) => {
-        return index !== editingIndex && item.loginPin === employee.loginPin;
+        return index !== editingIndex && normalizePin(item.loginPin) === normalizePin(employee.loginPin);
       });
 
       if (duplicatePin) {
@@ -435,7 +516,7 @@
     }
 
     /* =========================
-       08 - RENDER EMPLOYEES
+       09 - RENDER EMPLOYEES
     ========================== */
 
     function renderEmployees() {
@@ -454,6 +535,7 @@
               ID: ${escapeHtml(employee.employeeId)}<br>
               Role: ${escapeHtml(employee.role)} • Active: ${escapeHtml(employee.active)}<br>
               Facilities: ${escapeHtml(employee.allowedFacilities || "")}<br>
+              Default: ${escapeHtml(employee.defaultFacility || "")}<br>
               PIN: ****
             </div>
 
@@ -467,7 +549,7 @@
     }
 
     /* =========================
-       09 - EDIT AND DELETE
+       10 - EDIT AND DELETE
     ========================== */
 
     function editEmployee(index) {
@@ -481,7 +563,7 @@
       setValue("employeeName", employee.employeeName);
       setValue("loginPin", employee.loginPin);
       setValue("role", employee.role);
-      setValue("allowedFacilities", employee.allowedFacilities);
+      setValue("allowedFacilities", employee.allowedFacilities || "ALL");
       setValue("defaultFacility", employee.defaultFacility);
       setValue("notes", employee.notes);
 
@@ -514,7 +596,7 @@
       setValue("employeeName", "");
       setValue("loginPin", "");
       setValue("role", "Admin");
-      setValue("allowedFacilities", "");
+      setValue("allowedFacilities", "ALL");
       setValue("defaultFacility", "");
       setValue("notes", "");
 
@@ -527,10 +609,76 @@
       document.getElementById("viewReports").checked = false;
       document.getElementById("viewTools").checked = false;
       document.getElementById("active").checked = true;
+
+      document.getElementById("rightsGrid").classList.remove("active");
     }
 
     /* =========================
-       10 - HELPERS
+       11 - VIEW TOGGLE
+    ========================== */
+
+    function toggleViews() {
+      document.getElementById("rightsGrid").classList.toggle("active");
+    }
+
+    /* =========================
+       12 - CSV PARSER
+    ========================== */
+
+    function parseCsv(csvText) {
+      const cleanText = String(csvText || "").trim();
+
+      if (!cleanText) return [];
+
+      const lines = cleanText.split(/\r?\n/);
+
+      if (lines.length < 2) return [];
+
+      const headers = splitCsvLine(lines[0]).map(header => header.trim()).filter(Boolean);
+      const rows = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const values = splitCsvLine(lines[i]);
+        const row = {};
+
+        headers.forEach((header, index) => {
+          row[header] = values[index] ? values[index].trim() : "";
+        });
+
+        rows.push(row);
+      }
+
+      return rows;
+    }
+
+    function splitCsvLine(line) {
+      const result = [];
+      let current = "";
+      let insideQuotes = false;
+
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        const nextChar = line[i + 1];
+
+        if (char === '"' && insideQuotes && nextChar === '"') {
+          current += '"';
+          i++;
+        } else if (char === '"') {
+          insideQuotes = !insideQuotes;
+        } else if (char === "," && !insideQuotes) {
+          result.push(current);
+          current = "";
+        } else {
+          current += char;
+        }
+      }
+
+      result.push(current);
+      return result;
+    }
+
+    /* =========================
+       13 - HELPERS
     ========================== */
 
     function getValue(id) {
@@ -557,6 +705,45 @@
       setTimeout(() => {
         statusBox.classList.remove("active");
       }, 2500);
+    }
+
+    function makeInitials(name) {
+      const cleanName = String(name || "").trim();
+
+      if (!cleanName) return "NEW";
+
+      if (cleanName.includes("/")) {
+        const beforeSlash = cleanName.split("/")[0].trim();
+        const cleaned = beforeSlash.replace(/[^a-zA-Z0-9]/g, "");
+        return cleaned.substring(0, 4).toUpperCase() || "NEW";
+      }
+
+      const words = cleanName
+        .replace(/[^a-zA-Z0-9 ]/g, " ")
+        .split(" ")
+        .filter(Boolean);
+
+      if (!words.length) return "NEW";
+
+      if (words.length === 1) {
+        return words[0].substring(0, 4).toUpperCase();
+      }
+
+      return words
+        .map(word => word[0])
+        .join("")
+        .substring(0, 4)
+        .toUpperCase();
+    }
+
+    function normalize(value) {
+      return String(value || "").trim();
+    }
+
+    function normalizePin(value) {
+      return String(value || "")
+        .replace(/\.0$/, "")
+        .replace(/[^0-9]/g, "");
     }
 
     function goBack() {
