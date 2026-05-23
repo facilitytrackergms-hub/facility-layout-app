@@ -8,7 +8,134 @@ gfhgfh
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #f2f2f2;
+      background: #f2f2f2;<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employees View</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 360px;
+      width: 100%;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+
+    label {
+      display: block;
+      margin: 12px 0 4px;
+      font-weight: bold;
+    }
+
+    input[type="text"], input[type="password"], select, textarea {
+      width: 100%;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-bottom: 8px;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    .button {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      margin: 6px 0;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .button-save {
+      background-color: #f0b912;
+      color: #000;
+    }
+
+    .button-clear {
+      background-color: #000;
+      color: #fff;
+    }
+
+    .button-allowed {
+      background-color: #f0b912;
+      color: #000;
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+
+    .back-button {
+      float: right;
+      background-color: #000;
+      color: #fff;
+      border-radius: 6px;
+      padding: 4px 10px;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <a href="#" class="back-button">Back</a>
+    <h2>Employees<br><small>Main Dashboard Access</small></h2>
+    
+    <form id="employeeForm">
+      <label for="employeeId">Employee ID</label>
+      <input type="text" id="employeeId" placeholder="EMP001">
+
+      <label for="pin">PIN</label>
+      <input type="password" id="pin">
+
+      <label for="role">Role</label>
+      <select id="role">
+        <option value="admin">Admin</option>
+        <option value="staff">Staff</option>
+      </select>
+
+      <label for="facilityAccess">Facility Access</label>
+      <select id="facilityAccess">
+        <option value="all">ALL Facilities</option>
+        <option value="default">Default facility</option>
+      </select>
+
+      <button type="button" class="button button-allowed">Allowed Views</button>
+
+      <label for="notes">Notes</label>
+      <textarea id="notes" rows="3" placeholder="Notes"></textarea>
+
+      <button type="submit" class="button button-save">Save Employee</button>
+      <button type="button" class="button button-clear" onclick="document.getElementById('employeeForm').reset();">Clear Form</button>
+    </form>
+
+    <div id="savedEmployees">
+      <h3>Saved Employees</h3>
+      <!-- Dynamically populated list will appear here -->
+    </div>
+  </div>
+</body>
+</html>
       display: flex;
       justify-content: center;
       align-items: flex-start;
