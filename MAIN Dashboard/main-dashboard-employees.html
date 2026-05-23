@@ -275,23 +275,29 @@
 
       <input
         id="employeeName"
+        name="newEmployeeNameField"
         class="input"
         type="text"
-        placeholder="Enter employee name"
+        placeholder="Enter new employee name"
         autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
         value=""
       >
 
       <div class="two-col">
         <input
           id="loginPin"
+          name="newEmployeePinField"
           class="input"
           type="password"
-          placeholder="PIN"
-          autocomplete="off"
+          placeholder="Enter PIN"
+          autocomplete="new-password"
           inputmode="numeric"
           maxlength="4"
           pattern="[0-9]*"
+          value=""
           oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4);"
         >
 
@@ -342,7 +348,7 @@
     </section>
 
     <div class="version">
-      Updated: 2026-05-23 01:05 PM • MAIN Dashboard/main-dashboard-employees.html
+      Updated: 2026-05-23 01:15 PM • MAIN Dashboard/main-dashboard-employees.html
     </div>
   </main>
 
@@ -356,7 +362,7 @@
     const FACILITY_INFO_CSV_URL =
       "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:csv&sheet=Facility_Info";
 
-    const STORAGE_KEY = "facilityLayoutEmployeesV4";
+    const STORAGE_KEY = "facilityLayoutEmployeesV5";
 
     let employees = [];
     let facilities = [];
@@ -367,18 +373,26 @@
     ========================== */
 
     document.addEventListener("DOMContentLoaded", async () => {
-      forceClearNameBox();
+      clearVisibleInputsOnLoad();
       await loadFacilitiesFromSheet();
       loadEmployees();
       renderFacilityDropdowns();
       renderEmployees();
+      clearVisibleInputsOnLoad();
     });
 
-    function forceClearNameBox() {
-      const nameInput = document.getElementById("employeeName");
-      if (nameInput) {
-        nameInput.value = "";
-        nameInput.placeholder = "Enter employee name";
+    function clearVisibleInputsOnLoad() {
+      const employeeName = document.getElementById("employeeName");
+      const loginPin = document.getElementById("loginPin");
+
+      if (employeeName) {
+        employeeName.value = "";
+        employeeName.placeholder = "Enter new employee name";
+      }
+
+      if (loginPin) {
+        loginPin.value = "";
+        loginPin.placeholder = "Enter PIN";
       }
     }
 
