@@ -3,102 +3,97 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Employees - Main Dashboard Access</title>
+<title>Employee Management</title>
 <style>
-body {margin:0;font-family:Arial,sans-serif;background:#f2f2f2;display:flex;justify-content:center;padding:10px;}
-.card {width:100%;max-width:460px;background:white;border-radius:12px;padding:20px;margin-bottom:12px;box-shadow:0 3px 10px rgba(0,0,0,0.15);}
-h2 {margin-top:0;font-size:16px;text-align:center;}
-.form-group {margin-bottom:10px;}
-.form-group label {display:block;font-size:12px;margin-bottom:2px;font-weight:bold;}
-.form-group input,.form-group select,.form-group textarea {width:100%;padding:6px;font-size:12px;border-radius:6px;border:1px solid #ccc;}
-button {width:100%;padding:16px;margin-top:10px;font-size:16px;border:none;border-radius:8px;cursor:pointer;}
-.btn-black {background:#000;color:#fff;}
-.btn-yellow {background:#ffbf00;color:#000;}
-.version-label {font-size:10px;text-align:center;margin-top:6px;color:#777;}
-.employee-details {display:none;margin-top:10px;}
+  body { margin:0; font-family:Arial,sans-serif; background:#f2f2f2; display:flex; justify-content:center; padding:10px; }
+  .card { width:100%; max-width:460px; background:white; border-radius:12px; padding:20px; box-shadow:0 3px 10px rgba(0,0,0,0.15); }
+  .form-group { margin-bottom:10px; }
+  .form-group label { display:block; font-size:12px; font-weight:bold; margin-bottom:2px; }
+  .form-group input, .form-group select, .form-group textarea { width:100%; padding:8px; border-radius:6px; border:1px solid #ccc; box-sizing: border-box; }
+  button { width:100%; padding:14px; margin-top:10px; border:none; border-radius:8px; cursor:pointer; font-weight:bold; }
+  .btn-black { background:#000; color:#fff; }
+  .btn-yellow { background:#ffbf00; color:#000; }
 </style>
 </head>
 <body>
 <div class="card">
-<h2>Employees<br><small>Main Dashboard Access</small></h2>
-
-<button class="btn-black" id="backBtn">Back</button>
-
-<div class="form-group">
-<label for="employeeName">Employee Name</label>
-<input type="text" id="employeeName" value="">
-</div>
-
-<div class="form-group">
-<label for="pin">PIN</label>
-<input type="password" id="pin" value="">
-</div>
-
-<div class="form-group">
-<label for="role">Role</label>
-<select id="role">
-<option value="" selected></option>
-<option>Admin</option>
-<option>Employee</option>
-<option>Housekeeper</option>
-<option>Laundry</option>
-</select>
-</div>
-
-<div class="form-group">
-<label for="facilityAccess">Facility Access</label>
-<select id="facilityAccess">
-<option value="" selected></option>
-<option>All Facilities</option>
-<option>Facility 1</option>
-<option>Facility 2</option>
-</select>
-</div>
-
-<button class="btn-yellow" id="allowedViewsBtn">Allowed Views</button>
-
-<div class="form-group">
-<label for="notes">Notes</label>
-<textarea id="notes" rows="2"></textarea>
-</div>
-
-<button class="btn-yellow" id="saveEmployeeBtn">Save Employee</button>
-
-<div class="version-label">
-Updated: 2026-05-23 09:10 AM • employees.html
-</div>
+  <h2 style="text-align:center">Manage Employee</h2>
+  <button class="btn-black" onclick="window.history.back()">Back</button>
+  <hr>
+  <div class="form-group">
+    <label>Employee Name</label>
+    <input type="text" id="employeeName">
+  </div>
+  <div class="form-group">
+    <label>PIN</label>
+    <input type="text" id="pin">
+  </div>
+  <div class="form-group">
+    <label>Role</label>
+    <select id="role">
+      <option value="Employee">Employee</option>
+      <option value="Admin">Admin</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>Facility Access</label>
+    <input type="text" id="facilityAccess">
+  </div>
+  <div class="form-group">
+    <label>Notes</label>
+    <textarea id="notes" rows="3"></textarea>
+  </div>
+  <button class="btn-yellow" id="saveBtn">Save & Sync to Google Sheet</button>
 </div>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbwvVPayNd7j7DjgCEYk-6XtVcrV2wm-QZjFB0hE07-KjddTzlrXZXVQjp7vbrByyz567w/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbwvVPayNd7j7DjgCEYk-6XtVcrV2wm-QZjFB0hE07-KjddTzlrXZXVQjp7vbrByyz567w/exec';
 
-const backBtn = document.getElementById('backBtn');
-const saveBtn = document.getElementById('saveEmployeeBtn');
-
-backBtn.addEventListener('click', ()=>window.history.back());
-
-saveBtn.addEventListener('click', async () => {
-  const payload = {
-    sheet: "Employees",
-    data: {
-      employeeName: document.getElementById('employeeName').value,
-      loginPin: document.getElementById('pin').value,
-      role: document.getElementById('role').value,
-      allowedFacilities: document.getElementById('facilityAccess').value,
-      notes: document.getElementById('notes').value
+  // 1. Load data from URL parameter on startup
+  window.onload = async () => {
+    const params = new URLSearchParams(window.location.search);
+    const name = params.get('name');
+    if (name) {
+      document.getElementById('employeeName').value = name;
+      const resp = await fetch(API_URL + '?sheet=Employees');
+      const data = await resp.json();
+      const user = data.find(e => e.employeeName === name);
+      if (user) {
+        document.getElementById('pin').value = user.loginPin || '';
+        document.getElementById('role').value = user.role || 'Employee';
+        document.getElementById('facilityAccess').value = user.allowedFacilities || '';
+        document.getElementById('notes').value = user.notes || '';
+      }
     }
   };
-  try {
-    await fetch(API_URL,{
-      method:'POST',
-      body: JSON.stringify(payload)
-    });
-    alert("Employee details saved!");
-  } catch(e){
-    console.error(e);
-    alert("Failed to save employee data.");
-  }
-});
+
+  // 2. Save data back to Sheet
+  document.getElementById('saveBtn').onclick = async () => {
+    const btn = document.getElementById('saveBtn');
+    btn.innerText = "Syncing...";
+    btn.disabled = true;
+
+    const payload = {
+      sheet: "Employees",
+      data: {
+        employeeName: document.getElementById('employeeName').value,
+        loginPin: document.getElementById('pin').value,
+        role: document.getElementById('role').value,
+        allowedFacilities: document.getElementById('facilityAccess').value,
+        notes: document.getElementById('notes').value
+      }
+    };
+
+    try {
+      await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+      alert("Employee Updated Successfully!");
+    } catch (e) {
+      alert("Error saving data.");
+    } finally {
+      btn.innerText = "Save & Sync to Google Sheet";
+      btn.disabled = false;
+    }
+  };
 </script>
 </body>
 </html>
