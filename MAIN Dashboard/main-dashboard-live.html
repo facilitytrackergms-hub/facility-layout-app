@@ -5,10 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MAIN Dashboard</title>
 <style>
-/* Keep your existing CSS unchanged */
+/* Include all original CSS exactly as in your current styled file to keep layout intact */
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Arial, sans-serif; background: #f2f2f2; min-height: 100vh; padding: 10px; display: flex; justify-content: center; align-items: flex-start; }
+.app { width: 100%; max-width: 430px; background: #ffffff; border-radius: 18px; padding: 14px; box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18); }
+.title { font-size: 23px; font-weight: 900; margin: 0; text-align: center; line-height: 1.1; }
+.tag { text-align: center; font-size: 12px; font-weight: 700; color: #555; margin-top: 5px; margin-bottom: 14px; }
+.card-box { border: 2px dashed #d2d2d2; border-radius: 16px; background: #fafafa; padding: 12px; margin-bottom: 12px; }
+.box-title { font-size: 17px; font-weight: 900; text-align: center; margin-bottom: 10px; color: #111; }
+.input { width: 100%; border: 1px solid #bbb; border-radius: 12px; padding: 12px; font-size: 16px; font-weight: 700; outline: none; margin-bottom: 8px; background: white; }
+.facility-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 10px; }
+.facility-btn { border: none; background: #f4c542; color: #111; border-radius: 14px; padding: 16px 10px; font-size: 17px; font-weight: 900; cursor: pointer; box-shadow: 0 3px 8px rgba(0,0,0,0.18); text-align: center; min-height: 74px; }
+.facility-btn.black-btn { background: #222; color: #ffffff; }
+.facility-name { display: block; font-size: 10px; font-weight: 800; margin-top: 5px; color: #333; line-height: 1.1; }
+.black-btn .facility-name { color: #ffffff; }
+.status { display: none; margin-top: 8px; padding: 10px; border-radius: 12px; background: #eeeeee; font-size: 13px; font-weight: 800; text-align: center; color: #333; }
+.status.active { display: block; }
+.modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45); padding: 16px; align-items: center; justify-content: center; z-index: 99; }
+.modal-backdrop.active { display: flex; }
+.modal-card { width: 100%; max-width: 390px; background: white; border-radius: 18px; padding: 14px; box-shadow: 0 5px 22px rgba(0, 0, 0, 0.28); }
+.modal-title { font-size: 20px; font-weight: 900; text-align: center; margin-bottom: 12px; }
+.modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+.modal-btn { border: none; border-radius: 12px; padding: 12px; font-size: 16px; font-weight: 900; cursor: pointer; }
+.save-btn { background: #f4c542; color: #111; }
+.cancel-btn { background: #222; color: #ffffff; }
+.version { margin-top: 14px; text-align: center; font-size: 11px; color: #777; }
+.facility-btn:active, .modal-btn:active { transform: scale(0.98); }
 </style>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js"></script>
 </head>
@@ -16,20 +40,16 @@
 <main class="app">
 <h1 class="title">MAIN Dashboard</h1>
 <div class="tag">Facility Layout App</div>
-
 <section class="card-box">
 <div class="box-title">Enter PIN</div>
 <input id="loginInput" class="input" type="password" placeholder="Enter PIN" maxlength="4" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4);">
 <div id="statusBox" class="status"></div>
 </section>
-
 <section id="facilityList" class="facility-list">
 <button class="facility-btn" disabled>Loading<span class="facility-name">Please wait</span></button>
 </section>
-
 <div class="version">Updated: <span id="versionTimestamp"></span> • MAIN Dashboard/main-dashboard-live.html</div>
 </main>
-
 <div id="newFacilityModal" class="modal-backdrop">
 <div class="modal-card">
 <div class="modal-title">Enter New Facility</div>
@@ -40,11 +60,7 @@
 </div>
 </div>
 </div>
-
 <script>
-// =========================
-// Firebase configuration
-// =========================
 const firebaseConfig = {
   apiKey: "AIzaSyBDjQ6P5kO2N7QPChqS1t7VyJA_LZ7OCfQ",
   authDomain: "facility-layout-app-builder.firebaseapp.com",
@@ -53,104 +69,36 @@ const firebaseConfig = {
   messagingSenderId: "765295196678",
   appId: "1:765295196678:web:6112286c1bb33390e6a187"
 };
-
 const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore(app);
-
 let facilities = [];
 let employees = [];
 
-// =========================
-// Startup
-// =========================
 document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("versionTimestamp").innerText = new Date().toLocaleString();
   clearInputsOnLoad();
   await loadDataFromFirestore();
   renderFacilityButtons();
 });
-
-function clearInputsOnLoad() {
-  document.getElementById("loginInput").value = '';
-  document.getElementById("newFacilityInput").value = '';
+function clearInputsOnLoad(){document.getElementById("loginInput").value=''; document.getElementById("newFacilityInput").value='';}
+async function loadDataFromFirestore(){
+  try { const facilitySnapshot = await db.collection("Facility_Info").get(); facilities = facilitySnapshot.docs.map(doc=>{const data=doc.data(); return {id:data.facilityId,name:data.facilityName,initials:data.facilityName.substring(0,4).toUpperCase(),source:'db'};}); } catch(e){console.error(e); showStatus("Could not load Facility_Info collection."); facilities=[];}
+  try { const employeeSnapshot = await db.collection("Employees").get(); employees = employeeSnapshot.docs.map(doc=>doc.data()); } catch(e){console.error(e); showStatus("Could not load Employees collection."); employees=[];}
 }
-
-// =========================
-// Load Data from Firestore
-// =========================
-async function loadDataFromFirestore() {
-  try {
-    const facilitySnapshot = await db.collection("Facility_Info").get();
-    facilities = facilitySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return { id: data.facilityId, name: data.facilityName, initials: data.facilityName.substring(0,4).toUpperCase(), source: 'db' };
-    });
-  } catch(e) {
-    console.error(e);
-    showStatus("Could not load Facility_Info collection.");
-    facilities = [];
-  }
-
-  try {
-    const employeeSnapshot = await db.collection("Employees").get();
-    employees = employeeSnapshot.docs.map(doc => doc.data());
-  } catch(e) {
-    console.error(e);
-    showStatus("Could not load Employees collection.");
-    employees = [];
-  }
+function renderFacilityButtons(){
+  const facilityList=document.getElementById("facilityList");
+  const manageEmployeesButton=`<button class="facility-btn" onclick="openMainDashboardUsers()">Manage Employees<span class="facility-name">Users / Access</span></button>`;
+  const newFacilityButton=`<button class="facility-btn black-btn" onclick="openNewFacilityPopup()">+<span class="facility-name">Enter New Facility</span></button>`;
+  const facilityButtons=facilities.map((facility,index)=>`<button class="facility-btn" onclick="openFacility(${index})">${escapeHtml(facility.initials)}<span class="facility-name">${escapeHtml(facility.name)}</span></button>`).join("");
+  facilityList.innerHTML=manageEmployeesButton+newFacilityButton+facilityButtons;
 }
-
-// =========================
-// Existing functions remain unchanged
-// =========================
-function renderFacilityButtons() {
-  const facilityList = document.getElementById("facilityList");
-  const manageEmployeesButton = `<button class="facility-btn" onclick="openMainDashboardUsers()">Manage Employees<span class="facility-name">Users / Access</span></button>`;
-  const newFacilityButton = `<button class="facility-btn black-btn" onclick="openNewFacilityPopup()">+<span class="facility-name">Enter New Facility</span></button>`;
-
-  const facilityButtons = facilities.map((facility, index) => `<button class="facility-btn" onclick="openFacility(${index})">${escapeHtml(facility.initials)}<span class="facility-name">${escapeHtml(facility.name)}</span></button>`).join("");
-
-  facilityList.innerHTML = manageEmployeesButton + newFacilityButton + facilityButtons;
-}
-
-function getPin() { return document.getElementById("loginInput").value.trim(); }
-function getLoggedInEmployee() {
-  const pin = getPin();
-  if (!pin) { showStatus("Enter PIN first."); return null; }
-  return employees.find(row => String(row.loginPin||'').trim()===pin && row.active!=='no');
-}
-function openMainDashboardUsers() {
-  const employee = getLoggedInEmployee();
-  if (!employee) return;
-  sessionStorage.setItem("loggedInEmployeeName", employee.employeeName);
-  sessionStorage.setItem("loggedInEmployeeRole", employee.role);
-  window.location.href = "main-dashboard-employees.html";
-}
-function openFacility(index) {
-  const employee = getLoggedInEmployee();
-  if (!employee) return;
-  const facility = facilities[index];
-  if (!facility) { showStatus("Facility not found."); return; }
-  sessionStorage.setItem("selectedFacilityId", facility.id);
-  sessionStorage.setItem("selectedFacilityName", facility.name);
-  window.location.href = `../${encodeURIComponent(facility.initials)}/facilityinformation${encodeURIComponent(facility.initials)}.html?facilityId=${encodeURIComponent(facility.id)}&facilityName=${encodeURIComponent(facility.name)}`;
-}
+function getPin(){return document.getElementById("loginInput").value.trim();}
+function getLoggedInEmployee(){const pin=getPin(); if(!pin){showStatus("Enter PIN first."); return null;} return employees.find(row=>String(row.loginPin||'').trim()===pin && row.active!=='no');}
+function openMainDashboardUsers(){const employee=getLoggedInEmployee(); if(!employee) return; sessionStorage.setItem("loggedInEmployeeName",employee.employeeName); sessionStorage.setItem("loggedInEmployeeRole",employee.role); window.location.href="main-dashboard-employees.html";}
+function openFacility(index){const employee=getLoggedInEmployee(); if(!employee) return; const facility=facilities[index]; if(!facility){showStatus("Facility not found."); return;} sessionStorage.setItem("selectedFacilityId",facility.id); sessionStorage.setItem("selectedFacilityName",facility.name); window.location.href=`../${encodeURIComponent(facility.initials)}/facilityinformation${encodeURIComponent(facility.initials)}.html?facilityId=${encodeURIComponent(facility.id)}&facilityName=${encodeURIComponent(facility.name)}`;}
 function openNewFacilityPopup(){document.getElementById("newFacilityModal").classList.add("active");}
 function closeNewFacilityPopup(){document.getElementById("newFacilityModal").classList.remove("active");}
-async function saveNewFacility(){
-  const input = document.getElementById("newFacilityInput");
-  const facilityName = input.value.trim();
-  if(!facilityName){showStatus("Enter a facility name first."); return;}
-  const initials = facilityName.substring(0,4).toUpperCase();
-  if(facilities.some(f=>f.name.toLowerCase()===facilityName.toLowerCase())){showStatus("That facility already exists."); return;}
-  const newFacility = {id:initials,name:facilityName,initials:initials,source:'local'};
-  await db.collection("Facility_Info").doc(initials).set(newFacility);
-  facilities.push(newFacility);
-  renderFacilityButtons();
-  closeNewFacilityPopup();
-  showStatus("Facility saved.");
-}
+async function saveNewFacility(){const input=document.getElementById("newFacilityInput"); const facilityName=input.value.trim(); if(!facilityName){showStatus("Enter a facility name first."); return;} const initials=facilityName.substring(0,4).toUpperCase(); if(facilities.some(f=>f.name.toLowerCase()===facilityName.toLowerCase())){showStatus("That facility already exists."); return;} const newFacility={id:initials,name:facilityName,initials:initials,source:'local'}; await db.collection("Facility_Info").doc(initials).set(newFacility); facilities.push(newFacility); renderFacilityButtons(); closeNewFacilityPopup(); showStatus("Facility saved.");}
 function showStatus(msg){const s=document.getElementById("statusBox");s.innerText=msg;s.classList.add("active");setTimeout(()=>s.classList.remove("active"),3000);}
 function escapeHtml(value){return String(value||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");}
 </script>
