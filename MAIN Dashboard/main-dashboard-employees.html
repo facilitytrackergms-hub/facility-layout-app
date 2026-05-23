@@ -273,7 +273,6 @@
     <section class="card-box">
       <div class="box-title">Add / Edit Employee</div>
 
-
       <input id="employeeName" class="input" type="text" placeholder="Employee name" autocomplete="off">
 
       <div class="two-col">
@@ -336,7 +335,7 @@
     </section>
 
     <div class="version">
-     Updated: 2026-05-23 12:35 PM • MAIN Dashboard/main-dashboard-employees.html
+      Updated: 2026-05-23 12:50 PM • MAIN Dashboard/main-dashboard-employees.html
     </div>
   </main>
 
@@ -350,7 +349,7 @@
     const FACILITY_INFO_CSV_URL =
       "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:csv&sheet=Facility_Info";
 
-    const STORAGE_KEY = "facilityLayoutEmployeesV2";
+    const STORAGE_KEY = "facilityLayoutEmployeesV3";
 
     let employees = [];
     let facilities = [];
@@ -481,7 +480,7 @@
 
     function getEmployeeFromForm() {
       return {
-        employeeId: getValue("employeeId"),
+        employeeId: editingIndex === null ? "" : employees[editingIndex].employeeId,
         employeeName: getValue("employeeName"),
         loginPin: getValue("loginPin"),
         role: getValue("role"),
@@ -532,7 +531,6 @@
           <div class="employee-card">
             <div class="employee-name">${escapeHtml(employee.employeeName)}</div>
             <div class="employee-meta">
-              ID: ${escapeHtml(employee.employeeId)}<br>
               Role: ${escapeHtml(employee.role)} • Active: ${escapeHtml(employee.active)}<br>
               Facilities: ${escapeHtml(employee.allowedFacilities || "")}<br>
               Default: ${escapeHtml(employee.defaultFacility || "")}<br>
@@ -559,7 +557,6 @@
 
       editingIndex = index;
 
-      setValue("employeeId", employee.employeeId);
       setValue("employeeName", employee.employeeName);
       setValue("loginPin", employee.loginPin);
       setValue("role", employee.role);
@@ -592,7 +589,6 @@
     function clearForm() {
       editingIndex = null;
 
-      setValue("employeeId", "");
       setValue("employeeName", "");
       setValue("loginPin", "");
       setValue("role", "Admin");
