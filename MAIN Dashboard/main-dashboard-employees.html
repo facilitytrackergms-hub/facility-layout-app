@@ -5,95 +5,134 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Employee Management</title>
 <style>
-  body { margin:0; font-family:Arial,sans-serif; background:#f2f2f2; display:flex; justify-content:center; padding:10px; }
-  .card { width:100%; max-width:460px; background:white; border-radius:12px; padding:20px; box-shadow:0 3px 10px rgba(0,0,0,0.15); }
+  body { margin:0; font-family:Arial,sans-serif; background:#f2f2f2; padding:10px; display:flex; flex-direction:column; align-items:center; }
+  .card { width:100%; max-width:460px; background:white; border-radius:12px; padding:20px; box-shadow:0 3px 10px rgba(0,0,0,0.15); margin-bottom:20px; }
   .form-group { margin-bottom:10px; }
   .form-group label { display:block; font-size:12px; font-weight:bold; margin-bottom:2px; }
-  .form-group input, .form-group select, .form-group textarea { width:100%; padding:8px; border-radius:6px; border:1px solid #ccc; box-sizing: border-box; }
+  .form-group input, .form-group select, .form-group textarea { width:100%; padding:10px; border-radius:6px; border:1px solid #ccc; box-sizing: border-box; }
   button { width:100%; padding:14px; margin-top:10px; border:none; border-radius:8px; cursor:pointer; font-weight:bold; }
   .btn-black { background:#000; color:#fff; }
   .btn-yellow { background:#ffbf00; color:#000; }
+  .btn-red { background:#d9534f; color:#fff; }
+  
+  /* Modal Logic */
+  .modal { display:none; position:fixed; z-index:100; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; }
+  .modal-content { background:white; padding:20px; border-radius:12px; width:90%; max-width:400px; }
+  
+  .employee-list { width:100%; max-width:460px; display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+  .emp-btn { background:#fff; border:1px solid #ddd; padding:12px; border-radius:8px; font-size:13px; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.05); }
 </style>
 </head>
 <body>
+
 <div class="card">
-  <h2 style="text-align:center">Manage Employee</h2>
-  <button class="btn-black" onclick="window.history.back()">Back</button>
-  <hr>
-  <div class="form-group">
-    <label>Employee Name</label>
-    <input type="text" id="employeeName">
+  <button class="btn-black" onclick="window.history.back()">← Back</button>
+  <h2 style="text-align:center">Employee Management</h2>
+  <p style="font-size:12px; text-align:center; color:#666;">Enter info below to add new, or click a button below to edit/delete.</p>
+  
+  <div class="form-group"><label>Employee Name</label><input type="text" id="employeeName"></div>
+  <div class="form-group"><label>PIN</label><input type="text" id="pin"></div>
+  <div class="form-group"><label>Role</label><select id="role"><option value="">-- Select --</option><option value="Admin">Admin</option><option value="Staff">Staff</option></select></div>
+  <div class="form-group"><label>Facility Access</label><select id="facilityAccess"><option value="">Loading...</option></select></div>
+  
+  <button class="btn-yellow" id="saveBtn">Save New Employee</button>
+</div>
+
+<h3>Current Staff List</h3>
+<div id="employeeButtons" class="employee-list"></div>
+
+<div id="editModal" class="modal">
+  <div class="modal-content">
+    <h3 id="modalTitle" style="margin-top:0">Edit Employee</h3>
+    <div id="modalBody"></div>
+    <button class="btn-yellow" id="modalUpdateBtn">Update Info</button>
+    <button class="btn-red" id="modalDeleteBtn">Delete Employee</button>
+    <button class="btn-black" onclick="closeModal()">Cancel</button>
   </div>
-  <div class="form-group">
-    <label>PIN</label>
-    <input type="text" id="pin">
-  </div>
-  <div class="form-group">
-    <label>Role</label>
-    <select id="role">
-      <option value="Employee">Employee</option>
-      <option value="Admin">Admin</option>
-    </select>
-  </div>
-  <div class="form-group">
-    <label>Facility Access</label>
-    <input type="text" id="facilityAccess">
-  </div>
-  <div class="form-group">
-    <label>Notes</label>
-    <textarea id="notes" rows="3"></textarea>
-  </div>
-  <button class="btn-yellow" id="saveBtn">Save & Sync to Google Sheet</button>
 </div>
 
 <script>
-// Update this line in both of your HTML files
-const API_URL = 'https://script.google.com/macros/s/AKfycbwd_Zkshsq6w6tJ5sYyptdAbhrmsmz0D6ChmmReuDw_eRz4PhAMib1qPsROxc_9su6stA/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbwd_Zkshsq6w6tJ5sYyptdAbhrmsmz0D6ChmmReuDw_eRz4PhAMib1qPsROxc_9su6stA/exec';
+  let selectedEmp = null;
 
-  // 1. Load data from URL parameter on startup
-  window.onload = async () => {
-    const params = new URLSearchParams(window.location.search);
-    const name = params.get('name');
-    if (name) {
-      document.getElementById('employeeName').value = name;
-      const resp = await fetch(API_URL + '?sheet=Employees');
-      const data = await resp.json();
-      const user = data.find(e => e.employeeName === name);
-      if (user) {
-        document.getElementById('pin').value = user.loginPin || '';
-        document.getElementById('role').value = user.role || 'Employee';
-        document.getElementById('facilityAccess').value = user.allowedFacilities || '';
-        document.getElementById('notes').value = user.notes || '';
-      }
-    }
+  window.onload = () => { loadFacilities(); loadEmployees(); };
+
+  async function loadFacilities() {
+    const resp = await fetch(API_URL + '?sheet=Facility_Info');
+    const facilities = await resp.json();
+    const select = document.getElementById('facilityAccess');
+    select.innerHTML = '<option value="">-- Select Facility --</option>';
+    facilities.forEach(f => {
+      let opt = document.createElement('option');
+      opt.value = opt.innerText = f.facilityName;
+      select.appendChild(opt);
+    });
+  }
+
+  async function loadEmployees() {
+    const resp = await fetch(API_URL + '?sheet=Employees');
+    const data = await resp.json();
+    const container = document.getElementById('employeeButtons');
+    container.innerHTML = '';
+    data.forEach(emp => {
+      let btn = document.createElement('button');
+      btn.className = 'emp-btn';
+      btn.innerText = emp.employeeName;
+      btn.onclick = () => openModal(emp);
+      container.appendChild(btn);
+    });
+  }
+
+  function openModal(emp) {
+    selectedEmp = emp;
+    document.getElementById('modalTitle').innerText = "Manage: " + emp.employeeName;
+    document.getElementById('modalBody').innerHTML = `
+      <p><b>Name:</b> ${emp.employeeName}</p>
+      <p><b>Role:</b> ${emp.role || 'Not Set'}</p>
+      <p><b>PIN:</b> ${emp.loginPin}</p>
+    `;
+    document.getElementById('editModal').style.display = 'flex';
+  }
+
+  function closeModal() { document.getElementById('editModal').style.display = 'none'; }
+
+  // DELETE LOGIC
+  document.getElementById('modalDeleteBtn').onclick = async () => {
+    if(!confirm("Are you sure you want to delete this employee?")) return;
+    await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ sheet: "Employees", action: "delete", data: { employeeName: selectedEmp.employeeName }})
+    });
+    alert("Deleted");
+    closeModal();
+    loadEmployees();
   };
 
-  // 2. Save data back to Sheet
-  document.getElementById('saveBtn').onclick = async () => {
-    const btn = document.getElementById('saveBtn');
-    btn.innerText = "Syncing...";
-    btn.disabled = true;
+  // UPDATE LOGIC (Loads info back into main form to edit)
+  document.getElementById('modalUpdateBtn').onclick = () => {
+    document.getElementById('employeeName').value = selectedEmp.employeeName;
+    document.getElementById('pin').value = selectedEmp.loginPin;
+    document.getElementById('role').value = selectedEmp.role || '';
+    document.getElementById('facilityAccess').value = selectedEmp.allowedFacilities || '';
+    closeModal();
+    window.scrollTo({top:0, behavior:'smooth'});
+  };
 
+  // SAVE/ADD LOGIC
+  document.getElementById('saveBtn').onclick = async () => {
     const payload = {
       sheet: "Employees",
+      action: "save",
       data: {
         employeeName: document.getElementById('employeeName').value,
         loginPin: document.getElementById('pin').value,
         role: document.getElementById('role').value,
-        allowedFacilities: document.getElementById('facilityAccess').value,
-        notes: document.getElementById('notes').value
+        allowedFacilities: document.getElementById('facilityAccess').value
       }
     };
-
-    try {
-      await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-      alert("Employee Updated Successfully!");
-    } catch (e) {
-      alert("Error saving data.");
-    } finally {
-      btn.innerText = "Save & Sync to Google Sheet";
-      btn.disabled = false;
-    }
+    await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+    alert("Saved!");
+    loadEmployees();
   };
 </script>
 </body>
