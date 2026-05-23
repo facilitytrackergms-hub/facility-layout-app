@@ -247,7 +247,7 @@
     </section>
 
     <div class="version">
-      Updated: 2026-05-23 02:05 PM • MAIN Dashboard/index.html
+      Updated: 2026-05-23 02:15 PM • MAIN Dashboard/index.html
     </div>
   </main>
 
@@ -289,7 +289,7 @@
     const EMPLOYEES_CSV_URL =
       "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:csv&sheet=Employees";
 
-    const LOCAL_FACILITY_STORAGE_KEY = "facilityLayoutLocalFacilitiesV2";
+    const LOCAL_FACILITY_STORAGE_KEY = "facilityLayoutLocalFacilitiesV3";
 
     let facilities = [];
     let employees = [];
@@ -300,15 +300,17 @@
 
     document.addEventListener("DOMContentLoaded", async () => {
       clearInputsOnLoad();
-      await loadAppData();
       renderFacilityButtons();
-      clearInputsOnLoad();
 
       document.getElementById("newFacilityInput").addEventListener("keydown", event => {
         if (event.key === "Enter") {
           saveNewFacility();
         }
       });
+
+      await loadAppData();
+      renderFacilityButtons();
+      clearInputsOnLoad();
     });
 
     function clearInputsOnLoad() {
@@ -572,7 +574,8 @@
       const canOpen =
         yesNo(employee.adminAccess) === "yes" ||
         yesNo(employee.viewEmployees) === "yes" ||
-        yesNo(employee.viewMainDashboard) === "yes";
+        yesNo(employee.viewMainDashboard) === "yes" ||
+        normalize(employee.role).toLowerCase() === "admin";
 
       if (!canOpen) {
         showStatus("No access to manage employees.");
@@ -597,7 +600,11 @@
         return;
       }
 
-      if (yesNo(employee.viewFacilityDashboard) !== "yes" && yesNo(employee.adminAccess) !== "yes") {
+      if (
+        yesNo(employee.viewFacilityDashboard) !== "yes" &&
+        yesNo(employee.adminAccess) !== "yes" &&
+        normalize(employee.role).toLowerCase() !== "admin"
+      ) {
         showStatus("No access to facility dashboard.");
         return;
       }
