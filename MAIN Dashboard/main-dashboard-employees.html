@@ -6,12 +6,12 @@
 <title>Employees - Main Dashboard Access</title>
 <style>
 body {margin:0;font-family:Arial,sans-serif;background:#f2f2f2;display:flex;justify-content:center;padding:10px;}
-.card {width:100%;max-width:460px;background:white;border-radius:12px;padding:12px;margin-bottom:12px;box-shadow:0 3px 10px rgba(0,0,0,0.15);}
+.card {width:100%;max-width:460px;background:white;border-radius:12px;padding:20px;margin-bottom:12px;box-shadow:0 3px 10px rgba(0,0,0,0.15);}
 h2 {margin-top:0;font-size:16px;text-align:center;}
 .form-group {margin-bottom:10px;}
 .form-group label {display:block;font-size:12px;margin-bottom:2px;font-weight:bold;}
 .form-group input,.form-group select,.form-group textarea {width:100%;padding:6px;font-size:12px;border-radius:6px;border:1px solid #ccc;}
-button {width:100%;padding:12px;margin-top:10px;font-size:14px;border:none;border-radius:6px;cursor:pointer;}
+button {width:100%;padding:16px;margin-top:10px;font-size:16px;border:none;border-radius:8px;cursor:pointer;}
 .btn-black {background:#000;color:#fff;}
 .btn-yellow {background:#ffbf00;color:#000;}
 .version-label {font-size:10px;text-align:center;margin-top:6px;color:#777;}
@@ -22,27 +22,21 @@ button {width:100%;padding:12px;margin-top:10px;font-size:14px;border:none;borde
 <div class="card">
 <h2>Employees<br><small>Main Dashboard Access</small></h2>
 
+<button class="btn-black" id="backBtn">Back</button>
+
 <div class="form-group">
-<label for="pin">Enter Admin PIN</label>
+<label for="employeeName">Employee Name</label>
+<input type="text" id="employeeName" value="">
+</div>
+
+<div class="form-group">
+<label for="pin">PIN</label>
 <input type="password" id="pin" value="">
 </div>
 
-<button class="btn-yellow" id="manageEmployeesBtn">Manage Employees</button>
-
-<div class="employee-details" id="employeeDetails">
 <div class="form-group">
-<label for="editEmployeeName">Employee Name</label>
-<input type="text" id="editEmployeeName" value="Ivy Edward">
-</div>
-
-<div class="form-group">
-<label for="editPin">PIN</label>
-<input type="password" id="editPin" value="">
-</div>
-
-<div class="form-group">
-<label for="editRole">Role</label>
-<select id="editRole">
+<label for="role">Role</label>
+<select id="role">
 <option value="" selected></option>
 <option>Admin</option>
 <option>Employee</option>
@@ -52,8 +46,8 @@ button {width:100%;padding:12px;margin-top:10px;font-size:14px;border:none;borde
 </div>
 
 <div class="form-group">
-<label for="editFacilityAccess">Facility Access</label>
-<select id="editFacilityAccess">
+<label for="facilityAccess">Facility Access</label>
+<select id="facilityAccess">
 <option value="" selected></option>
 <option>All Facilities</option>
 <option>Facility 1</option>
@@ -61,13 +55,14 @@ button {width:100%;padding:12px;margin-top:10px;font-size:14px;border:none;borde
 </select>
 </div>
 
+<button class="btn-yellow" id="allowedViewsBtn">Allowed Views</button>
+
 <div class="form-group">
-<label for="editNotes">Notes</label>
-<textarea id="editNotes" rows="2"></textarea>
+<label for="notes">Notes</label>
+<textarea id="notes" rows="2"></textarea>
 </div>
 
-<button class="btn-yellow" id="saveEditBtn">Save Changes</button>
-</div>
+<button class="btn-yellow" id="saveEmployeeBtn">Save Employee</button>
 
 <div class="version-label">
 Updated: 2026-05-23 09:10 AM • employees.html
@@ -75,56 +70,31 @@ Updated: 2026-05-23 09:10 AM • employees.html
 </div>
 
 <script>
-const manageBtn = document.getElementById('manageEmployeesBtn');
-const pinInput = document.getElementById('pin');
-const employeeDetails = document.getElementById('employeeDetails');
-const saveBtn = document.getElementById('saveEditBtn');
+const API_URL = 'https://script.google.com/macros/s/AKfycbwvVPayNd7j7DjgCEYk-6XtVcrV2wm-QZjFB0hE07-KjddTzlrXZXVQjp7vbrByyz567w/exec';
 
-async function validateAdminPin(pin) {
-  try {
-    const res = await fetch(`${API_URL}?sheet=Employees`);
-    const data = await res.json();
-    return data.find(emp => String(emp.loginPin || "") === pin && emp.role.toLowerCase() === "admin");
-  } catch(e) {
-    console.error(e);
-    return null;
-  }
-}
+const backBtn = document.getElementById('backBtn');
+const saveBtn = document.getElementById('saveEmployeeBtn');
 
-manageBtn.addEventListener('click', async () => {
-  const pin = pinInput.value.trim();
-  if(!pin) { alert("Enter PIN"); return; }
-
-  const admin = await validateAdminPin(pin);
-  if(!admin) { alert("Invalid admin PIN"); return; }
-
-  employeeDetails.style.display = 'block';
-  document.getElementById('editEmployeeName').value = "Ivy Edward";
-  document.getElementById('editPin').value = "";
-  document.getElementById('editRole').value = "";
-  document.getElementById('editFacilityAccess').value = "";
-  document.getElementById('editNotes').value = "";
-});
+backBtn.addEventListener('click', ()=>window.history.back());
 
 saveBtn.addEventListener('click', async () => {
   const payload = {
     sheet: "Employees",
     data: {
-      employeeName: document.getElementById('editEmployeeName').value,
-      loginPin: document.getElementById('editPin').value,
-      role: document.getElementById('editRole').value,
-      allowedFacilities: document.getElementById('editFacilityAccess').value,
-      notes: document.getElementById('editNotes').value
+      employeeName: document.getElementById('employeeName').value,
+      loginPin: document.getElementById('pin').value,
+      role: document.getElementById('role').value,
+      allowedFacilities: document.getElementById('facilityAccess').value,
+      notes: document.getElementById('notes').value
     }
   };
-
   try {
-    await fetch(API_URL, {
-      method: 'POST',
+    await fetch(API_URL,{
+      method:'POST',
       body: JSON.stringify(payload)
     });
     alert("Employee details saved!");
-  } catch(e) {
+  } catch(e){
     console.error(e);
     alert("Failed to save employee data.");
   }
