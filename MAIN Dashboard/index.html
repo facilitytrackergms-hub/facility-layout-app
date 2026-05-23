@@ -247,7 +247,7 @@
     </section>
 
     <div class="version">
-      Updated: 2026-05-23 01:45 PM • MAIN Dashboard/index.html
+      Updated: 2026-05-23 02:05 PM • MAIN Dashboard/index.html
     </div>
   </main>
 
@@ -283,10 +283,11 @@
 
     const SHEET_ID = "1NgaIHQopiTuTuJpKgO05gxDddRaMwg_7HusVDarcfq0";
 
-  const EMPLOYEES_CSV_URL =
-  "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:csv&sheet=Employees";
+    const FACILITY_INFO_CSV_URL =
+      "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:csv&sheet=Facility_Info";
+
     const EMPLOYEES_CSV_URL =
-      "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:csv&sheet=Employees%20";
+      "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:csv&sheet=Employees";
 
     const LOCAL_FACILITY_STORAGE_KEY = "facilityLayoutLocalFacilitiesV2";
 
@@ -369,7 +370,7 @@
         const csvText = await response.text();
 
         employees = parseCsv(csvText).filter(row => {
-          return normalize(row.employeeName) && normalize(row.loginPin);
+          return normalize(row.employeeName) && normalizePin(row.loginPin);
         });
       } catch (error) {
         console.error(error);
@@ -709,7 +710,14 @@
     }
 
     function yesNo(value) {
-      return String(value || "").trim().toLowerCase();
+      const clean = String(value || "").trim().toLowerCase();
+
+      if (clean === "true") return "yes";
+      if (clean === "1") return "yes";
+      if (clean === "x") return "yes";
+      if (clean === "checked") return "yes";
+
+      return clean;
     }
 
     function escapeHtml(value) {
