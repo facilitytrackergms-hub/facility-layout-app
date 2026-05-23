@@ -35,9 +35,6 @@
     .cancel-btn { background: #222; color: #ffffff; }
     .version { margin-top: 14px; text-align: center; font-size: 11px; color: #777; }
     .facility-btn:active, .modal-btn:active { transform: scale(0.98); }
-    /* ==========================================================================
-                                   MAIN DASHBOARD                               
-       ========================================================================== */
   </style>
 
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -75,7 +72,7 @@
     </section>
 
     <div class="version">
-      Updated: 2026-05-23 7-55 PM | MAIN Dashboard/main-dashboard-live.html
+      Updated: 2026-05-23 7-110155 PM | MAIN Dashboard/main-dashboard-live.html
     </div>
   </main>
 
@@ -99,42 +96,28 @@
   </div>
 
   <script>
-    /* ==========================================================================
-                               FIREBASE CONFIGURATION                           
-       ========================================================================== */
-  const firebaseConfig = {
-  apiKey: "AIzaSyBDjQ6P5kO2N7QPChqS1t7VyJA_LZ7OCfQ",
-  authDomain: "facility-layout-app-builder.firebaseapp.com",
-  projectId: "facility-layout-app-builder",
-  storageBucket: "facility-layout-app-builder.firebasestorage.app",
-  messagingSenderId: "765295196678",
-  appId: "1:765295196678:web:6112286c1bb33390e6a187",
-  measurementId: "G-3XVCHEXPVX"
-};
+    const firebaseConfig = {
+      apiKey: "AIzaSyBDjQ6P5kO2N7QPChqS1t7VyJA_LZ7OCfQ",
+      authDomain: "facility-layout-app-builder.firebaseapp.com",
+      projectId: "facility-layout-app-builder",
+      storageBucket: "facility-layout-app-builder.firebasestorage.app",
+      messagingSenderId: "765295196678",
+      appId: "1:765295196678:web:6112286c1bb33390e6a187",
+      measurementId: "G-3XVCHEXPVX"
+    };
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
     let facilities = [];
     let employees = [];
-    /* ==========================================================================
-                               FIREBASE CONFIGURATION                           
-       ========================================================================== */
 
-    /* ==========================================================================
-                                      STARTUP                                   
-       ========================================================================== */
     document.addEventListener("DOMContentLoaded", async () => {
       clearInputsOnLoad();
       renderFacilityButtons();
-
-      document.getElementById("newFacilityInput").addEventListener("keydown", event => {
-        if (event.key === "Enter") {
-          saveNewFacility();
-        }
-      });
-
+      document.getElementById("newFacilityInput").addEventListener("keydown", event => { if (event.key === "Enter") saveNewFacility(); });
       await loadAppData();
+      console.log("Facilities loaded:", facilities); // TEMPORARY DEBUG LINE
       renderFacilityButtons();
       clearInputsOnLoad();
     });
@@ -145,19 +128,9 @@
       if (pinInput) pinInput.value = "";
       if (facilityInput) facilityInput.value = "";
     }
-    /* ==========================================================================
-                                      STARTUP                                   
-       ========================================================================== */
 
-    /* ==========================================================================
-                             LOAD DATA FROM FIREBASE                            
-       ========================================================================== */
     async function loadAppData() {
-      await Promise.all([
-        loadFacilitiesFromFirebase(),
-        loadEmployeesFromFirebase()
-        console.log("Employees loaded:", employees);
-      ]);
+      await Promise.all([loadFacilitiesFromFirebase(), loadEmployeesFromFirebase()]);
     }
 
     async function loadFacilitiesFromFirebase() {
@@ -168,19 +141,10 @@
           const data = doc.data();
           if (normalize(data.id) && normalize(data.name)) {
             const initials = makeInitials(data.name);
-            facilities.push({
-              id: normalize(data.id),
-              name: normalize(data.name),
-              initials: initials,
-              folder: data.folder || initials,
-              source: data.source || "database"
-            });
+            facilities.push({ id: normalize(data.id), name: normalize(data.name), initials, folder: data.folder || initials, source: data.source || "database" });
           }
         });
-      } catch (error) {
-        console.error(error);
-        showStatus("Could not load facilities database.");
-      }
+      } catch (error) { console.error(error); showStatus("Could not load facilities database."); }
     }
 
     async function loadEmployeesFromFirebase() {
@@ -190,223 +154,32 @@
         snapshot.forEach(doc => {
           const data = doc.data();
           if (normalize(data.employeename) && normalizePin(data.loginpin)) {
-            employees.push({
-              employeename: normalize(data.employeename),
-              loginpin: normalizePin(data.loginpin),
-              active: data.active,
-              adminaccess: data.adminaccess,
-              viewemployees: data.viewemployees,
-              viewmaindashboard: data.viewmaindashboard,
-              viewfacilitydashboard: data.viewfacilitydashboard,
-              role: data.role,
-              allowedfacilities: data.allowedfacilities
-            });
+            employees.push({ employeename: normalize(data.employeename), loginpin: normalizePin(data.loginpin), active: data.active, adminaccess: data.adminaccess, viewemployees: data.viewemployees, viewmaindashboard: data.viewmaindashboard, viewfacilitydashboard: data.viewfacilitydashboard, role: data.role, allowedfacilities: data.allowedfacilities });
           }
         });
-      } catch (error) {
-        console.error(error);
-        showStatus("Could not load employees database.");
-      }
-    }
-    /* ==========================================================================
-                             LOAD DATA FROM FIREBASE                            
-       ========================================================================== */
-
-    /* ==========================================================================
-                           NEW FACILITY POPUP & SAVE                            
-       ========================================================================== */
-    function openNewFacilityPopup() {
-      const modal = document.getElementById("newFacilityModal");
-      const input = document.getElementById("newFacilityInput");
-      input.value = "";
-      modal.classList.add("active");
-      setTimeout(() => { input.focus(); }, 100);
+      } catch (error) { console.error(error); showStatus("Could not load employees database."); }
     }
 
-    function closeNewFacilityPopup() {
-      document.getElementById("newFacilityModal").classList.remove("active");
-      document.getElementById("newFacilityInput").value = "";
-    }
+    function makeInitials(name) { const cleanName = String(name || "").trim(); if (!cleanName) return "NEW"; if (cleanName.includes("/")) return cleanName.split("/")[0].replace(/[^a-zA-Z0-9]/g, "").substring(0, 4).toUpperCase() || "NEW"; const words = cleanName.replace(/[^a-zA-Z0-9 ]/g, " ").split(" ").filter(Boolean); if (!words.length) return "NEW"; if (words.length === 1) return words[0].substring(0, 4).toUpperCase(); return words.map(word => word[0]).join("").substring(0, 4).toUpperCase(); }
 
-    async function saveNewFacility() {
-      const input = document.getElementById("newFacilityInput");
-      const facilityName = input.value.trim();
-
-      if (!facilityName) {
-        showStatus("Enter a facility name first.");
-        return;
-      }
-
-      const initials = makeInitials(facilityName);
-      const alreadyExists = facilities.some(facility => {
-        return facility.name.toLowerCase() === facilityName.toLowerCase() ||
-               facility.initials.toLowerCase() === initials.toLowerCase();
-      });
-
-      if (alreadyExists || initials === "MD") {
-        showStatus("That facility already exists.");
-        return;
-      }
-
-      const newFacilityObj = {
-        id: initials,
-        name: facilityName,
-        folder: initials,
-        source: "database"
-      };
-
-      try {
-        await db.collection("facilities").add(newFacilityObj);
-        facilities.push({ ...newFacilityObj, initials: initials });
-        renderFacilityButtons();
-        closeNewFacilityPopup();
-        showStatus("Facility saved to database.");
-      } catch (error) {
-        console.error(error);
-        showStatus("Error saving facility to database.");
-      }
-    }
-
-    function makeInitials(name) {
-      const cleanName = String(name || "").trim();
-      if (!cleanName) return "NEW";
-      if (cleanName.includes("/")) {
-        return cleanName.split("/")[0].replace(/[^a-zA-Z0-9]/g, "").substring(0, 4).toUpperCase() || "NEW";
-      }
-      const words = cleanName.replace(/[^a-zA-Z0-9 ]/g, " ").split(" ").filter(Boolean);
-      if (!words.length) return "NEW";
-      if (words.length === 1) return words[0].substring(0, 4).toUpperCase();
-      return words.map(word => word[0]).join("").substring(0, 4).toUpperCase();
-    }
-    /* ==========================================================================
-                           NEW FACILITY POPUP & SAVE                            
-       ========================================================================== */
-
-    /* ==========================================================================
-                                 RENDER BUTTONS                                 
-       ========================================================================== */
     function renderFacilityButtons() {
       const facilityList = document.getElementById("facilityList");
-      const manageEmployeesButton = `
-        <button class="facility-btn" onclick="openMainDashboardUsers()">
-          Manage Employees
-          <span class="facility-name">Users / Access</span>
-        </button>
-      `;
-      const newFacilityButton = `
-        <button class="facility-btn black-btn" onclick="openNewFacilityPopup()">
-          +
-          <span class="facility-name">Enter New Facility</span>
-        </button>
-      `;
-      const facilityButtons = facilities.map((facility, index) => {
-        return `
-          <button class="facility-btn" onclick="openFacility(${index})">
-            ${escapeHtml(facility.initials)}
-            <span class="facility-name">${escapeHtml(facility.name)}</span>
-          </button>
-        `;
-      }).join("");
-
+      const manageEmployeesButton = `<button class="facility-btn" onclick="openMainDashboardUsers()">Manage Employees<span class="facility-name">Users / Access</span></button>`;
+      const newFacilityButton = `<button class="facility-btn black-btn" onclick="openNewFacilityPopup()">+<span class="facility-name">Enter New Facility</span></button>`;
+      const facilityButtons = facilities.map((facility, index) => `<button class="facility-btn" onclick="openFacility(${index})">${escapeHtml(facility.initials)}<span class="facility-name">${escapeHtml(facility.name)}</span></button>`).join("");
       facilityList.innerHTML = manageEmployeesButton + newFacilityButton + facilityButtons;
     }
-    /* ==========================================================================
-                                 RENDER BUTTONS                                 
-       ========================================================================== */
 
-    /* ==========================================================================
-                                   PIN CHECK                                    
-       ========================================================================== */
     function getPin() { return document.getElementById("loginInput").value.trim(); }
 
-function getLoggedInEmployee() {
-  const pin = getPin();
-  if (!pin) { showStatus("Enter PIN first."); return null; }
+    function getLoggedInEmployee() { const pin = getPin(); if (!pin) { showStatus("Enter PIN first."); return null; } const employee = employees.find(row => { return normalizePin(row.loginpin) === normalizePin(pin) && yesNo(row.active) !== "no"; }); if (!employee) { showStatus("PIN not found or inactive."); return null; } return employee; }
 
-  // ensure employees are loaded
-  if (!employees || !employees.length) {
-    showStatus("Employees not loaded yet.");
-    return null;
-  }
-
-  const employee = employees.find(row => {
-    const rowPin = normalizePin(row.loginpin);
-    const isActive = row.active === true || String(row.active).toLowerCase() === "true";
-    return rowPin === normalizePin(pin) && isActive;
-  });
-
-  if (!employee) { showStatus("PIN not found or inactive."); return null; }
-  return employee;
-}
     function normalizePin(value) { return String(value || "").replace(/\.0$/, "").replace(/[^0-9]/g, ""); }
-    /* ==========================================================================
-                                   PIN CHECK                                    
-       ========================================================================== */
 
-    /* ==========================================================================
-                                   NAVIGATION                                   
-       ========================================================================== */
-    function openMainDashboardUsers() {
-      const employee = getLoggedInEmployee();
-      if (!employee) return;
-      const canOpen = yesNo(employee.adminaccess) === "yes" || yesNo(employee.viewemployees) === "yes" || yesNo(employee.viewmaindashboard) === "yes" || normalize(employee.role).toLowerCase() === "admin";
-      if (!canOpen) { showStatus("No access to manage employees."); return; }
-      sessionStorage.setItem("loggedInEmployeeName", normalize(employee.employeename));
-      sessionStorage.setItem("loggedInEmployeeRole", normalize(employee.role));
-      window.location.href = "main-dashboard-employees.html";
-    }
-
-    function openFacility(index) {
-      const employee = getLoggedInEmployee();
-      if (!employee) return;
-      const facility = facilities[index];
-      if (!facility) { showStatus("Facility not found."); return; }
-      if (yesNo(employee.viewfacilitydashboard) !== "yes" && yesNo(employee.adminaccess) !== "yes" && normalize(employee.role).toLowerCase() !== "admin") {
-        showStatus("No access to facility dashboard.");
-        return;
-      }
-      if (!employeeCanAccessFacility(employee, facility)) { showStatus("No access to this facility."); return; }
-      sessionStorage.setItem("loggedInEmployeeName", normalize(employee.employeename));
-      sessionStorage.setItem("loggedInEmployeeRole", normalize(employee.role));
-      sessionStorage.setItem("selectedFacilityId", facility.id);
-      sessionStorage.setItem("selectedFacilityName", facility.name);
-
-      const url = "../" + encodeURIComponent(facility.folder) + "/facilityinformation" + encodeURIComponent(facility.folder) + ".html" + "?facilityId=" + encodeURIComponent(facility.id) + "&facilityName=" + encodeURIComponent(facility.name);
-      window.location.href = url;
-    }
-
-    function employeeCanAccessFacility(employee, facility) {
-      const allowed = normalize(employee.allowedfacilities).toUpperCase();
-      if (!allowed || allowed === "ALL") return true;
-      const parts = allowed.split(/[,\|;/]+/).map(item => item.trim().toUpperCase()).filter(Boolean);
-      return parts.includes(facility.initials.toUpperCase()) || parts.includes(facility.id.toUpperCase()) || parts.includes(facility.name.toUpperCase());
-    }
-    /* ==========================================================================
-                                   NAVIGATION                                   
-       ========================================================================== */
-
-    /* ==========================================================================
-                               STATUS AND HELPERS                               
-       ========================================================================== */
-    function showStatus(message) {
-      const statusBox = document.getElementById("statusBox");
-      statusBox.innerText = message;
-      statusBox.classList.add("active");
-      setTimeout(() => { statusBox.classList.remove("active"); }, 3000);
-    }
-
+    function showStatus(message) { const statusBox = document.getElementById("statusBox"); statusBox.innerText = message; statusBox.classList.add("active"); setTimeout(() => { statusBox.classList.remove("active"); }, 3000); }
     function normalize(value) { return String(value || "").trim(); }
-    function yesNo(value) {
-      const clean = String(value || "").trim().toLowerCase();
-      if (clean === "true" || clean === "1" || clean === "x" || clean === "checked") return "yes";
-      return clean;
-    }
-    function escapeHtml(value) {
-      return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-    }
-    /* ==========================================================================
-                               STATUS AND HELPERS                               
-       ========================================================================== */
+    function yesNo(value) { const clean = String(value || "").trim().toLowerCase(); if (clean === "true" || clean === "1" || clean === "x" || clean === "checked") return "yes"; return clean; }
+    function escapeHtml(value) { return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
   </script>
 </body>
 </html>
