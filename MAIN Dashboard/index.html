@@ -40,7 +40,7 @@
     }
 
     .title {
-      font-size: 22px;
+      font-size: 23px;
       font-weight: 900;
       margin: 0;
       text-align: center;
@@ -56,25 +56,61 @@
       margin-bottom: 14px;
     }
 
-    .facility-box {
-      width: 100%;
+    .card-box {
       border: 2px dashed #d2d2d2;
-      border-radius: 14px;
+      border-radius: 16px;
       background: #fafafa;
       padding: 12px;
       margin-bottom: 12px;
     }
 
     .box-title {
+      font-size: 17px;
+      font-weight: 900;
+      text-align: center;
+      margin-bottom: 10px;
+      color: #111;
+    }
+
+    .input,
+    .select {
+      width: 100%;
+      border: 1px solid #bbb;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      outline: none;
+      margin-bottom: 8px;
+      background: white;
+    }
+
+    .main-btn {
+      width: 100%;
+      border: none;
+      background: #222;
+      color: #ffffff;
+      border-radius: 12px;
+      padding: 12px;
       font-size: 16px;
       font-weight: 900;
-      color: #111;
+      cursor: pointer;
       margin-bottom: 8px;
-      text-align: center;
+    }
+
+    .login-btn {
+      width: 100%;
+      border: none;
+      background: #f4c542;
+      color: #111;
+      border-radius: 12px;
+      padding: 13px;
+      font-size: 17px;
+      font-weight: 900;
+      cursor: pointer;
     }
 
     .facility-list {
-      width: 100%;
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 8px;
@@ -87,7 +123,7 @@
       color: #111;
       border-radius: 14px;
       padding: 16px 10px;
-      font-size: 20px;
+      font-size: 21px;
       font-weight: 900;
       cursor: pointer;
       box-shadow: 0 3px 8px rgba(0,0,0,0.18);
@@ -95,8 +131,13 @@
       min-height: 58px;
     }
 
-    .facility-btn:active {
-      transform: scale(0.98);
+    .facility-name {
+      display: block;
+      font-size: 10px;
+      font-weight: 800;
+      margin-top: 3px;
+      color: #333;
+      line-height: 1.1;
     }
 
     .empty-text {
@@ -109,7 +150,8 @@
     }
 
     .status {
-      margin-top: 10px;
+      display: none;
+      margin-top: 8px;
       padding: 10px;
       border-radius: 12px;
       background: #eeeeee;
@@ -119,8 +161,8 @@
       color: #333;
     }
 
-    .hidden {
-      display: none;
+    .status.active {
+      display: block;
     }
 
     .version {
@@ -128,6 +170,12 @@
       text-align: center;
       font-size: 11px;
       color: #777;
+    }
+
+    .main-btn:active,
+    .login-btn:active,
+    .facility-btn:active {
+      transform: scale(0.98);
     }
   </style>
 </head>
@@ -141,27 +189,59 @@
     <h1 class="title">MAIN Dashboard</h1>
     <div class="tag">Facility Layout App</div>
 
-    <section class="facility-box">
-      <div class="box-title">Facilities</div>
+    <section class="card-box">
+      <div class="box-title">Create New Facility</div>
 
-      <section id="facilityList" class="facility-list">
-        <div class="empty-text">Loading facilities...</div>
-      </section>
+      <input
+        id="newFacilityInput"
+        class="input"
+        type="text"
+        placeholder="Enter new facility"
+        autocomplete="off"
+      >
 
-      <div id="statusBox" class="status hidden"></div>
+      <button class="main-btn" onclick="saveNewFacility()">
+        Save Facility
+      </button>
+
+      <div id="statusBox" class="status"></div>
+    </section>
+
+    <section class="card-box">
+      <div class="box-title">Facility Login</div>
+
+      <select id="facilitySelect" class="select">
+        <option value="">Create new facility</option>
+      </select>
+
+      <input
+        id="loginInput"
+        class="input"
+        type="password"
+        placeholder="Enter login"
+        autocomplete="off"
+      >
+
+      <button class="login-btn" onclick="loginToSelectedFacility()">
+        Login
+      </button>
+    </section>
+
+    <section id="facilityList" class="facility-list">
+      <div class="empty-text">No facilities added yet.</div>
     </section>
 
     <div class="version">
-      Updated: 2026-05-23 10:05 AM • MAIN Dashboard/index.html
+      Updated: 2026-05-23 10:25 AM • MAIN Dashboard/index.html
     </div>
   </main>
 
   <script>
     /* =========================
-       04 - SETTINGS
+       04 - STORAGE
     ========================== */
 
-    const FACILITY_INFO_CSV_URL = "PASTE_FACILITY_INFO_CSV_LINK_HERE";
+    const STORAGE_KEY = "facilityLayoutFacilitiesV1";
 
     let facilities = [];
 
@@ -169,152 +249,104 @@
        05 - STARTUP
     ========================== */
 
-    document.addEventListener("DOMContentLoaded", loadFacilitiesFromSheet);
+    document.addEventListener("DOMContentLoaded", () => {
+      loadFacilities();
+      renderAll();
+
+      document.getElementById("newFacilityInput").addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+          saveNewFacility();
+        }
+      });
+
+      document.getElementById("loginInput").addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+          loginToSelectedFacility();
+        }
+      });
+    });
 
     /* =========================
-       06 - LOAD FACILITIES FROM SHEET
+       06 - LOAD AND SAVE
     ========================== */
 
-    async function loadFacilitiesFromSheet() {
-      const facilityList = document.getElementById("facilityList");
+    function loadFacilities() {
+      const saved = localStorage.getItem(STORAGE_KEY);
 
-      if (!FACILITY_INFO_CSV_URL || FACILITY_INFO_CSV_URL.includes("PASTE_")) {
-        facilityList.innerHTML = '<div class="empty-text">Add the Facility_Info CSV link in the code.</div>';
+      if (!saved) {
+        facilities = [];
         return;
       }
 
       try {
-        const response = await fetch(FACILITY_INFO_CSV_URL);
-        const csvText = await response.text();
-
-        facilities = parseCsv(csvText)
-          .filter(row => row.facilityId && row.facilityName)
-          .map(row => {
-            return {
-              facilityId: row.facilityId.trim(),
-              facilityName: row.facilityName.trim(),
-              facilityType: row.facilityType || "",
-              address: row.address || "",
-              city: row.city || "",
-              state: row.state || "",
-              initials: makeInitials(row.facilityName),
-              folder: makeInitials(row.facilityName)
-            };
-          });
-
-        renderFacilities();
+        facilities = JSON.parse(saved);
       } catch (error) {
-        console.error(error);
-        facilityList.innerHTML = '<div class="empty-text">Could not load facilities.</div>';
+        facilities = [];
       }
     }
 
+    function saveFacilities() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(facilities));
+    }
+
     /* =========================
-       07 - RENDER FACILITIES
+       07 - CREATE FACILITY
     ========================== */
 
-    function renderFacilities() {
-      const facilityList = document.getElementById("facilityList");
+    function saveNewFacility() {
+      const input = document.getElementById("newFacilityInput");
+      const facilityName = input.value.trim();
 
-      if (!facilities.length) {
-        facilityList.innerHTML = '<div class="empty-text">No facilities found.</div>';
+      if (!facilityName) {
+        showStatus("Enter a facility name first.");
         return;
       }
 
-      facilityList.innerHTML = facilities.map(facility => {
-        return `
-          <button
-            class="facility-btn"
-            title="${escapeHtml(facility.facilityName)}"
-            onclick="openFacility('${escapeForJs(facility.folder)}', '${escapeForJs(facility.facilityId)}', '${escapeForJs(facility.facilityName)}')"
-          >
-            ${escapeHtml(facility.initials)}
-          </button>
-        `;
-      }).join("");
-    }
+      const alreadyExists = facilities.some(facility => {
+        return facility.name.toLowerCase() === facilityName.toLowerCase();
+      });
 
-    /* =========================
-       08 - FACILITY NAVIGATION
-    ========================== */
-
-    function openFacility(folder, facilityId, facilityName) {
-      const url =
-        "../" + encodeURIComponent(folder) + "/index.html" +
-        "?facilityId=" + encodeURIComponent(facilityId) +
-        "&facilityName=" + encodeURIComponent(facilityName);
-
-      window.location.href = url;
-    }
-
-    /* =========================
-       09 - CSV PARSER
-    ========================== */
-
-    function parseCsv(csvText) {
-      const lines = csvText.trim().split(/\r?\n/);
-
-      if (lines.length < 2) return [];
-
-      const headers = splitCsvLine(lines[0]).map(header => header.trim());
-      const rows = [];
-
-      for (let i = 1; i < lines.length; i++) {
-        const values = splitCsvLine(lines[i]);
-        const row = {};
-
-        headers.forEach((header, index) => {
-          row[header] = values[index] ? values[index].trim() : "";
-        });
-
-        rows.push(row);
+      if (alreadyExists) {
+        showStatus("That facility already exists.");
+        return;
       }
 
-      return rows;
+      const initials = makeInitials(facilityName);
+
+      facilities.push({
+        id: initials,
+        name: facilityName,
+        initials: initials,
+        folder: initials
+      });
+
+      saveFacilities();
+      input.value = "";
+
+      renderAll();
+      showStatus("Facility saved.");
     }
-
-    function splitCsvLine(line) {
-      const result = [];
-      let current = "";
-      let insideQuotes = false;
-
-      for (let i = 0; i < line.length; i++) {
-        const char = line[i];
-        const nextChar = line[i + 1];
-
-        if (char === '"' && insideQuotes && nextChar === '"') {
-          current += '"';
-          i++;
-        } else if (char === '"') {
-          insideQuotes = !insideQuotes;
-        } else if (char === "," && !insideQuotes) {
-          result.push(current);
-          current = "";
-        } else {
-          current += char;
-        }
-      }
-
-      result.push(current);
-      return result;
-    }
-
-    /* =========================
-       10 - HELPERS
-    ========================== */
 
     function makeInitials(name) {
-      const cleanedName = String(name || "")
-        .replace(/\/.*/g, "")
-        .replace(/[^a-zA-Z0-9 ]/g, " ")
-        .trim();
+      const cleanName = String(name || "").trim();
 
-      const words = cleanedName.split(" ").filter(Boolean);
+      if (!cleanName) return "NEW";
+
+      if (cleanName.includes("/")) {
+        const beforeSlash = cleanName.split("/")[0].trim();
+        const cleaned = beforeSlash.replace(/[^a-zA-Z0-9]/g, "");
+        return cleaned.substring(0, 4).toUpperCase() || "NEW";
+      }
+
+      const words = cleanName
+        .replace(/[^a-zA-Z0-9 ]/g, " ")
+        .split(" ")
+        .filter(Boolean);
 
       if (!words.length) return "NEW";
 
       if (words.length === 1) {
-        return words[0].substring(0, 3).toUpperCase();
+        return words[0].substring(0, 4).toUpperCase();
       }
 
       return words
@@ -324,6 +356,115 @@
         .toUpperCase();
     }
 
+    /* =========================
+       08 - RENDER
+    ========================== */
+
+    function renderAll() {
+      renderDropdown();
+      renderFacilityButtons();
+    }
+
+    function renderDropdown() {
+      const select = document.getElementById("facilitySelect");
+
+      if (!facilities.length) {
+        select.innerHTML = '<option value="">Create new facility</option>';
+        return;
+      }
+
+      select.innerHTML =
+        '<option value="">Create new facility</option>' +
+        facilities.map((facility, index) => {
+          return `
+            <option value="${index}">
+              ${escapeHtml(facility.initials)} - ${escapeHtml(facility.name)}
+            </option>
+          `;
+        }).join("");
+    }
+
+    function renderFacilityButtons() {
+      const facilityList = document.getElementById("facilityList");
+
+      if (!facilities.length) {
+        facilityList.innerHTML = '<div class="empty-text">No facilities added yet.</div>';
+        return;
+      }
+
+      facilityList.innerHTML = facilities.map((facility, index) => {
+        return `
+          <button class="facility-btn" onclick="chooseFacility(${index})">
+            ${escapeHtml(facility.initials)}
+            <span class="facility-name">${escapeHtml(facility.name)}</span>
+          </button>
+        `;
+      }).join("");
+    }
+
+    /* =========================
+       09 - LOGIN
+    ========================== */
+
+    function chooseFacility(index) {
+      document.getElementById("facilitySelect").value = String(index);
+      document.getElementById("loginInput").focus();
+    }
+
+    function loginToSelectedFacility() {
+      const select = document.getElementById("facilitySelect");
+      const loginInput = document.getElementById("loginInput");
+
+      const selectedIndex = select.value;
+      const loginValue = loginInput.value.trim();
+
+      if (selectedIndex === "") {
+        showStatus("Select or create a facility first.");
+        return;
+      }
+
+      if (!loginValue) {
+        showStatus("Enter login first.");
+        return;
+      }
+
+      const facility = facilities[Number(selectedIndex)];
+
+      if (!facility) {
+        showStatus("Facility not found.");
+        return;
+      }
+
+      openFacility(facility);
+    }
+
+    function openFacility(facility) {
+      const url =
+        "../" + encodeURIComponent(facility.folder) + "/index.html" +
+        "?facilityId=" + encodeURIComponent(facility.id) +
+        "&facilityName=" + encodeURIComponent(facility.name);
+
+      window.location.href = url;
+    }
+
+    /* =========================
+       10 - STATUS
+    ========================== */
+
+    function showStatus(message) {
+      const statusBox = document.getElementById("statusBox");
+      statusBox.innerText = message;
+      statusBox.classList.add("active");
+
+      setTimeout(() => {
+        statusBox.classList.remove("active");
+      }, 2500);
+    }
+
+    /* =========================
+       11 - HELPERS
+    ========================== */
+
     function escapeHtml(value) {
       return String(value)
         .replace(/&/g, "&amp;")
@@ -331,12 +472,6 @@
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
-    }
-
-    function escapeForJs(value) {
-      return String(value)
-        .replace(/\\/g, "\\\\")
-        .replace(/'/g, "\\'");
     }
   </script>
 </body>
