@@ -2,78 +2,115 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Facility Info - Responsive</title>
+<title>Facility Info - Stacked Layout</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 10px; color: #2c3e50; background-color: #f0f2f5; }
-    h1 { text-align: center; font-size: 1.5rem; }
-
-    /* Desktop Table Styles */
-    .table-container { width: 100%; overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { border: 1px solid #eee; padding: 12px; text-align: left; }
-    th { background-color: #f8f9fa; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; }
-    
-    .input-cell { 
-        width: 100%; border: 1px solid transparent; background: transparent; 
-        font-family: inherit; font-size: 0.9rem; color: inherit; resize: none;
+    body { 
+        font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto; 
+        margin: 0; 
+        padding: 15px; 
+        background-color: #f4f7f6; 
+        color: #333;
     }
-    .input-cell:focus { border-color: #3498db; background: #fff; outline: none; border-radius: 4px; }
 
-    /* Mobile "Card" Layout */
-    @media screen and (max-width: 768px) {
-        /* Hide the table header */
-        thead { display: none; }
-        
-        table, tbody, tr, td { display: block; width: 100%; }
-        
-        tr { margin-bottom: 20px; border: 1px solid #ddd; border-radius: 10px; background: #fff; padding: 10px; box-sizing: border-box; }
-        
-        td { 
-            border: none; position: relative; padding-left: 45%; 
-            margin-bottom: 8px; min-height: 30px; display: flex; align-items: center;
+    h1 { font-size: 1.4rem; color: #2c3e50; margin-bottom: 20px; text-align: center; }
+
+    /* Container for each "Facility" card */
+    .facility-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        border: 1px solid #e1e4e8;
+    }
+
+    /* The Stacked Group */
+    .input-group {
+        display: flex;
+        flex-direction: column; /* This stacks them vertically */
+        margin-bottom: 15px;
+    }
+
+    .input-group label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #7f8c8d;
+        margin-bottom: 5px;
+        letter-spacing: 0.03em;
+    }
+
+    .input-field {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #dcdde1;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-family: inherit;
+        background-color: #fafafa;
+        box-sizing: border-box; /* Prevents padding from breaking width */
+        transition: border-color 0.2s;
+    }
+
+    .input-field:focus {
+        outline: none;
+        border-color: #3498db;
+        background-color: #fff;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+
+    /* Grid for Desktop - side by side if screen is wide */
+    @media (min-width: 600px) {
+        .card-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
         }
-
-        /* Create labels for each row using data-label attributes */
-        td::before {
-            content: attr(data-label);
-            position: absolute; left: 10px; width: 40%;
-            font-weight: bold; font-size: 0.75rem; color: #7f8c8d;
-            text-transform: uppercase;
-        }
-
-        .input-cell { border: 1px solid #eee; background: #fafafa; padding: 5px; border-radius: 4px; }
     }
 </style>
 </head>
 <body>
 
-<h1>Facility Info</h1>
+    <h1>Facility Manager</h1>
 
-<div class="table-container">
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Type</th>
-                <th>City</th>
-                <th>Manager</th>
-                <th>Phone</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td data-label="Facility ID"><textarea class="input-cell">F_001</textarea></td>
-                <td data-label="Name"><textarea class="input-cell">Grace Manor Suites</textarea></td>
-                <td data-label="Type"><textarea class="input-cell">Assisted Living</textarea></td>
-                <td data-label="City"><textarea class="input-cell">Lakeland</textarea></td>
-                <td data-label="Manager"><textarea class="input-cell">Berry</textarea></td>
-                <td data-label="Main Phone"><textarea class="input-cell">863-555-0100</textarea></td>
-            </tr>
-            </tbody>
-    </table>
-</div>
+    <div class="facility-card">
+        <div class="card-grid">
+            <div class="input-group">
+                <label>Facility ID</label>
+                <input type="text" class="input-field" value="F_001">
+            </div>
 
-</body>
+            <div class="input-group">
+                <label>Facility Name</label>
+                <input type="text" class="input-field" value="Grace Manor Suites">
+            </div>
+
+            <div class="input-group">
+                <label>Facility Type</label>
+                <input type="text" class="input-field" value="Assisted Living">
+            </div>
+
+            <div class="input-group">
+                <label>Main Phone</label>
+                <input type="tel" class="input-field" value="863-555-0100">
+            </div>
+            
+            <div class="input-group">
+                <label>Manager Name</label>
+                <input type="text" class="input-field" value="Berry">
+            </div>
+
+            <div class="input-group">
+                <label>City</label>
+                <input type="text" class="input-field" value="Lakeland">
+            </div>
+        </div>
+
+        <div class="input-group" style="margin-top: 10px;">
+            <label>Notes</label>
+            <textarea class="input-field" rows="3">Starter facility info for testing</textarea>
+        </div>
+    </div>
+    </body>
 </html>
