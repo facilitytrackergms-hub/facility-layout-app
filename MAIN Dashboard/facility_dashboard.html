@@ -1,1 +1,106 @@
-CCCCCC
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAIN Dashboard</title>
+<style>
+* { box-sizing: border-box; }
+body { margin:0; font-family:Arial,sans-serif; background:#f2f2f2; min-height:100vh; padding:10px; display:flex; justify-content:center; align-items:flex-start; }
+.app { width:100%; max-width:430px; background:#ffffff; border-radius:18px; padding:14px; box-shadow:0 4px 18px rgba(0,0,0,0.18); }
+.title { font-size:23px; font-weight:900; margin:0; text-align:center; line-height:1.1; }
+.tag { text-align:center; font-size:12px; font-weight:700; color:#555; margin-top:5px; margin-bottom:14px; }
+.card-box { border:2px dashed #d2d2d2; border-radius:16px; background:#fafafa; padding:12px; margin-bottom:12px; }
+.box-title { font-size:17px; font-weight:900; text-align:center; margin-bottom:10px; color:#111; }
+.input { width:100%; border:1px solid #bbb; border-radius:12px; padding:12px; font-size:16px; font-weight:700; outline:none; margin-bottom:8px; background:white; }
+.top-buttons { display:flex; justify-content:space-between; margin-bottom:12px; gap:8px; flex-wrap:wrap; }
+.top-buttons button { flex:1; padding:12px; font-weight:900; border:none; border-radius:12px; cursor:pointer; font-size:14px; color:white; min-width:120px; margin-bottom:4px; }
+.add-facility { background:black; }
+.manage-employees { background:#f4c542; color:#111; }
+.facility-list { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-top:10px; }
+.facility-btn-container { position: relative; }
+.facility-btn { border:none; background:#f4c542; color:#111; border-radius:14px; padding:16px 10px; font-size:17px; font-weight:900; cursor:pointer; box-shadow:0 3px 8px rgba(0,0,0,0.18); text-align:center; min-height:74px; width:100%; }
+.delete-btn { display:none; position:absolute; bottom:5px; right:5px; padding:5px 8px; font-size:12px; background:red; color:white; border:none; border-radius:6px; cursor:pointer; }
+.facility-btn-container:hover .delete-btn { display:block; }
+.facility-name { display:block; font-size:10px; font-weight:800; margin-top:5px; color:#333; line-height:1.1; }
+.version { margin-top:14px; text-align:center; font-size:11px; color:#777; }
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<main class="app">
+<h1 class="title">MAIN Dashboard</h1>
+<div class="tag">Facility Layout App</div>
+<div class="top-buttons">
+<button class="manage-employees" onclick="openMainDashboardUsers()">Manage Employees</button>
+<button class="add-facility" onclick="openNewFacilityPopup()">Enter New Facility</button>
+</div>
+<section class="card-box">
+<div class="box-title">Enter PIN</div>
+<input id="loginInput" class="input" type="password" placeholder="Enter PIN" maxlength="4" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4);">
+<div id="statusBox" class="status"></div>
+</section>
+<section id="facilityList" class="facility-list">
+<!-- facility buttons appended dynamically -->
+</section>
+<div class="version">Updated: <span id="versionTimestamp"></span> • MAIN Dashboard/facility_dashboard.html</div>
+</main>
+<div id="newFacilityModal" class="modal-backdrop" style="display:none;"></div>
+<script>
+const firebaseConfig = { apiKey: "AIzaSyBDjQ6P5kO2N7QPChqS1t7VyJA_LZ7OCfQ", authDomain: "facility-layout-app-builder.firebaseapp.com", projectId: "facility-layout-app-builder", storageBucket: "facility-layout-app-builder.firebasestorage.app", messagingSenderId: "765295196678", appId: "1:765295196678:web:6112286c1bb33390e6a187", measurementId: "G-3XVCHEXPVX" };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+let facilities = [];
+let employees = [];
+
+document.addEventListener("DOMContentLoaded", async () => {
+  clearInputsOnLoad();
+  await loadAppData();
+  renderFacilityButtons();
+  document.getElementById("versionTimestamp").innerText = new Date().toLocaleString();
+});
+
+function clearInputsOnLoad() { document.getElementById("loginInput").value = ''; }
+async function loadAppData() { await loadFacilitiesFromFirebase(); await loadEmployeesFromFirebase(); }
+async function loadFacilitiesFromFirebase() { try { const snapshot = await db.collection("Facility_Info").get(); facilities = snapshot.docs.map(doc => { const data = doc.data(); return { id: data.facilityid||data.id||'NEW', name: data.facilityname||data.name||'NEW', initials: makeInitials(data.facilityname||data.name) }; }); } catch(error) { console.error(error); showStatus("Could not load facilities database."); facilities = []; } }
+async function loadEmployeesFromFirebase() { try { const snapshot = await db.collection("Employees").get(); employees = snapshot.docs.map(doc => doc.data()); } catch(error) { console.error(error); showStatus("Could not load employees database."); employees = []; } }
+
+function makeInitials(name) { const cleanName = String(name || "").trim(); if (!cleanName) return "NEW"; const words = cleanName.replace(/[^a-zA-Z0-9 ]/g, " ").split(" ").filter(Boolean); if (!words.length) return "NEW"; if (words.length === 1) return words[0].substring(0,4).toUpperCase(); return words.map(w => w[0]).join("").substring(0,4).toUpperCase(); }
+
+function renderFacilityButtons() {
+  const facilityList = document.getElementById("facilityList");
+  facilityList.innerHTML = '';
+  facilities.forEach(facility => {
+    const container = document.createElement('div');
+    container.className = 'facility-btn-container';
+    const btn = document.createElement('button');
+    btn.className='facility-btn';
+    btn.textContent = facility.name;
+    btn.onclick = () => openFacilityDashboard(facility.id, facility.name);
+    const delBtn = document.createElement('button');
+    delBtn.className = 'delete-btn';
+    delBtn.textContent = 'X';
+    delBtn.onclick = () => promptPinForDelete(facilities.indexOf(facility));
+    container.appendChild(btn);
+    container.appendChild(delBtn);
+    facilityList.appendChild(container);
+  });
+}
+
+function openFacilityDashboard(facilityId, facilityName) {
+  if (!facilityId) return;
+  sessionStorage.setItem("selectedFacilityId", facilityId);
+  sessionStorage.setItem("selectedFacilityName", facilityName);
+  window.location.href = `/facility-layout-app/MAIN%20Dashboard/facility_dashboard.html?facility=${encodeURIComponent(facilityId)}`;
+}
+
+function getPin() { return document.getElementById("loginInput").value.trim(); }
+function showStatus(msg) { const s = document.getElementById("statusBox"); s.innerText = msg; s.classList.add("active"); setTimeout(()=>s.classList.remove("active"),3000); }
+function promptPinForDelete(index){ const pin = prompt('Enter PIN to delete facility'); if(pin==='1234'){ db.collection('Facility_Info').doc(facilities[index].id).delete(); facilities.splice(index,1); renderFacilityButtons(); showStatus('Facility deleted.'); } else { alert('Incorrect PIN'); } }
+function openMainDashboardUsers(){ const employee=getLoggedInEmployee(); if(!employee) return; window.location.href="main-dashboard-employees.html"; }
+function getLoggedInEmployee(){ const pin=getPin(); if(!pin){ showStatus("Enter PIN first."); return null; } return employees.find(emp=>emp.loginpin===pin&&emp.active!=='no'); }
+</script>
+</body>
+</html>
+
