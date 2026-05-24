@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MAIN Dashboard</title>
 <style>
-/* Keep existing CSS unchanged */
+/* Existing CSS unchanged */
 * { box-sizing: border-box; }
 body { margin:0; font-family:Arial,sans-serif; background:#f2f2f2; min-height:100vh; padding:10px; display:flex; justify-content:center; align-items:flex-start; }
 .app { width:100%; max-width:430px; background:#ffffff; border-radius:18px; padding:14px; box-shadow:0 4px 18px rgba(0,0,0,0.18); }
@@ -97,7 +97,8 @@ function openFacilityDashboard(facility) {
   sessionStorage.setItem('userPIN', userPIN);
   sessionStorage.setItem("selectedFacilityId", facility.id);
   sessionStorage.setItem("selectedFacilityName", facility.name);
-  window.location.href = `MAIN%20Dashboard/facility_dashboard.html?facility=${encodeURIComponent(facility.id)}`;
+  // CORRECTED PATH: RELATIVE TO CURRENT FOLDER
+  window.location.href = `facility_dashboard.html?facility=${encodeURIComponent(facility.id)}`;
 }
 
 function promptPinForDelete(index){ selectedFacilityIndex=index; document.getElementById('pinPromptModal').classList.add('active'); document.getElementById('pinPromptInput').value=''; }
