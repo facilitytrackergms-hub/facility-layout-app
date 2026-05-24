@@ -3,17 +3,638 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="refresh" content="0; url=MAIN%20Dashboard/main-dashboard-live.html?v=20260523-0225">
-  <title>MAIN Dashboard</title>
-  <script>
-    window.location.replace("MAIN%20Dashboard/main-dashboard-live.html?v=20260523-0225");
-  </script>
+  <title>Facilities login</title>
+  <style>
+    :root {
+      --primary-color: #f1c40f;
+      --primary-hover: #d4af37;
+      --danger-color: #e74c3c;
+      --text-color: #2c3e50;
+      --bg-color: #f8f9fa;
+      --card-bg: #ffffff;
+      --border-color: #bdc3c7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      background: var(--card-bg);
+      padding: 40px;
+      border-radius: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      margin-bottom: 24px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .view {
+      display: none;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    /* Login View styles */
+    .pin-box {
+      border: 2px dashed var(--border-color);
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 24px;
+    }
+
+    .pin-box label {
+      display: block;
+      font-weight: 700;
+      font-size: 1.4rem;
+      margin-bottom: 16px;
+    }
+
+    input[type="password"], input[type="text"], textarea, select {
+      width: 100%;
+      padding: 16px;
+      font-size: 1.2rem;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      outline: none;
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--text-color);
+    }
+
+    /* Dashboard Button Grid */
+    .btn-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .btn {
+      background-color: var(--primary-color);
+      color: #000000;
+      font-size: 1.1rem;
+      font-weight: 700;
+      padding: 24px 16px;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      position: relative;
+      transition: background-color 0.2s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-action {
+      grid-column: span 2;
+      background-color: #2ecc71;
+      color: white;
+    }
+    .btn-action:hover {
+      background-color: #27ae60;
+    }
+
+    .btn-back {
+      background-color: #7f8c8d;
+      color: white;
+      grid-column: span 2;
+      padding: 12px;
+      font-size: 1rem;
+    }
+    .btn-back:hover {
+      background-color: #95a5a6;
+    }
+
+    /* Delete Button inside Facility item */
+    .btn-facility-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    .btn-delete {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background-color: var(--danger-color);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      width: 24px;
+      height: 24px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      z-index: 2;
+    }
+
+    /* Modal Overlay Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+      padding: 20px;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 450px;
+      text-align: left;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .modal-content h3 {
+      margin-bottom: 16px;
+      font-size: 1.4rem;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .modal-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+    }
+
+    .modal-submit { background: #2ecc71; color: white; }
+    .modal-cancel { background: #e74c3c; color: white; }
+
+    /* Form Styles */
+    form {
+      text-align: left;
+      margin-top: 16px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .form-group input, .form-group select, .form-group textarea {
+      text-align: left;
+    }
+
+    .form-submit-btn {
+      background: #2ecc71;
+      color: white;
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .info-bar {
+      margin-top: 24px;
+      font-size: 0.85rem;
+      color: #7f8c8d;
+    }
+  </style>
 </head>
 <body>
-  <main>
-    <h1>MAIN Dashboard</h1>
-    <p>Opening MAIN Dashboard...</p>
-    <p>Updated: 2026-05-23 02:25 PM | index.html</p>
-  </main>
+
+  <div class="container">
+    <h1 id="app-title">Facilities login</h1>
+
+    <div id="view-login" class="view active">
+      <div class="pin-box">
+        <label for="pin-input">Enter PIN</label>
+        <input type="password" id="pin-input" maxlength="4" placeholder="Enter PIN" autocomplete="off">
+      </div>
+    </div>
+
+    <div id="view-facility-dashboard" class="view">
+      <div class="btn-grid">
+        <button class="btn btn-action" id="btn-add-facility">Add New Facility</button>
+        <div id="facility-buttons-container" style="display: contents;"></div>
+        <button class="btn btn-back" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <div id="view-facility-info" class="view">
+      <h2 id="selected-facility-name" style="margin-bottom: 20px;"></h2>
+      <div class="btn-grid">
+        <button class="btn" onclick="openFormView('employees')">Employees Information</button>
+        <button class="btn" onclick="openFormView('maintenance')">Maintenance Information</button>
+        <button class="btn" onclick="openFormView('building')">Building Information</button>
+        <button class="btn btn-back" onclick="showView('view-facility-dashboard')">Back to Facilities</button>
+      </div>
+    </div>
+
+    <div id="view-forms" class="view">
+      <h2 id="form-view-title" style="margin-bottom: 16px;">Form</h2>
+      
+      <form id="form-employees" class="sub-form" style="display: none;">
+        <div class="form-group">
+          <label>Employee ID</label>
+          <input type="text" name="employeeid" required>
+        </div>
+        <div class="form-group">
+          <label>Employee Name</label>
+          <input type="text" name="employeename" required>
+        </div>
+        <div class="form-group">
+          <label>Login PIN</label>
+          <input type="text" name="loginpin" maxlength="4" required>
+        </div>
+        <div class="form-group">
+          <label>Role</label>
+          <select name="role">
+            <option value="staff">Staff</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Allowed Facilities (Comma separated)</label>
+          <input type="text" name="allowedfacilities" placeholder="e.g. Grace Manor Suites, Hunter's Creek">
+        </div>
+        <button type="submit" class="form-submit-btn">Save Employee</button>
+      </form>
+
+      <form id="form-maintenance" class="sub-form" style="display: none;">
+        <div class="form-group">
+          <label>Issue Description</label>
+          <textarea name="description" rows="3" required></textarea>
+        </div>
+        <div class="form-group">
+          <label>Priority</label>
+          <select name="priority">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Area / Room Number</label>
+          <input type="text" name="location" required>
+        </div>
+        <button type="submit" class="form-submit-btn">Submit Log</button>
+      </form>
+
+      <form id="form-building" class="sub-form" style="display: none;">
+        <div class="form-group">
+          <label>Instruction / Rule Title</label>
+          <input type="text" name="title" required>
+        </div>
+        <div class="form-group">
+          <label>Details / Guidelines</label>
+          <textarea name="details" rows="4" required></textarea>
+        </div>
+        <button type="submit" class="form-submit-btn">Save Instruction</button>
+      </form>
+
+      <div class="btn-grid">
+        <button class="btn btn-back" onclick="showView('view-facility-info')">Back to Dashboard</button>
+      </div>
+    </div>
+
+    <div class="info-bar" id="info-bar-text">Facility Layout App</div>
+  </div>
+
+  <div class="modal" id="modal-add-facility">
+    <div class="modal-content">
+      <h3>Add New Facility</h3>
+      <div class="form-group">
+        <label for="new-facility-name">Facility Name</label>
+        <input type="text" id="new-facility-name" placeholder="Enter facility name">
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn modal-cancel" id="btn-modal-cancel">Cancel</button>
+        <button class="modal-btn modal-submit" id="btn-modal-submit">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+      getFirestore, collection, addDoc, getDocs, query, where, doc, deleteDoc, serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // Your Firebase Configuration using provided Project ID
+    const firebaseConfig = {
+      projectId: "facility-layout-app-builder",
+      authDomain: "facility-layout-app-builder.firebaseapp.com",
+      storageBucket: "facility-layout-app-builder.appspot.com"
+    };
+
+    // Initialize Firebase & Firestore
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Global App State Variables
+    let currentUser = null;
+    let currentFacility = null;
+
+    // DOM Element Selectors
+    const pinInput = document.getElementById('pin-input');
+    const appTitle = document.getElementById('app-title');
+    const facilityButtonsContainer = document.getElementById('facility-buttons-container');
+    const addFacilityModal = document.getElementById('modal-add-facility');
+    const newFacilityNameInput = document.getElementById('new-facility-name');
+    const selectedFacilityNameHeading = document.getElementById('selected-facility-name');
+
+    // --- VIEW CONTROLLER ---
+    function showView(viewId) {
+      document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+      document.getElementById(viewId).classList.add('active');
+      
+      // Dynamic Header Titles depending on step
+      if (viewId === 'view-login') {
+        appTitle.textContent = "Facilities login";
+      } else if (viewId === 'view-facility-dashboard') {
+        appTitle.textContent = "MAIN Dashboard";
+      } else {
+        appTitle.textContent = "Facility Layout App";
+      }
+    }
+
+    // --- SESSION INITIAL CHECK ---
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedUser = sessionStorage.getItem('currentUser');
+      if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        loadFacilityDashboard();
+      }
+    });
+
+    // --- AUTHENTICATION (4-DIGIT PIN TRIGGER) ---
+    pinInput.addEventListener('input', async (e) => {
+      const pin = e.target.value;
+      if (pin.length === 4) {
+        try {
+          const q = query(collection(db, "Employees"), where("loginpin", "==", pin));
+          const querySnapshot = await getDocs(q);
+          
+          if (!querySnapshot.empty) {
+            const userDoc = querySnapshot.docs[0];
+            currentUser = { id: userDoc.id, ...userDoc.data() };
+            
+            // Write session memory info directly into Firestore audit trail
+            await addDoc(collection(db, "Session_Logs"), {
+              employeeid: currentUser.employeeid || '',
+              employeename: currentUser.employeename || '',
+              timestamp: serverTimestamp(),
+              status: "Success"
+            });
+
+            // Store user session data in the browser cache 
+            sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+            
+            pinInput.value = '';
+            loadFacilityDashboard();
+          } else {
+            alert('Invalid PIN! Please try again.');
+            pinInput.value = '';
+          }
+        } catch (error) {
+          console.error("Authentication Error: ", error);
+          alert('Error connecting to database.');
+        }
+      }
+    });
+
+    // --- LOGOUT FUNCTIONALITY ---
+    window.logout = function() {
+      sessionStorage.removeItem('currentUser');
+      currentUser = null;
+      currentFacility = null;
+      showView('view-login');
+    };
+
+    // --- RENDER FACILITIES DASHBOARD ---
+    async function loadFacilityDashboard() {
+      facilityButtonsContainer.innerHTML = '';
+      showView('view-facility-dashboard');
+
+      try {
+        const querySnapshot = await getDocs(collection(db, "Facility_Info"));
+        let facilities = [];
+        querySnapshot.forEach(doc => {
+          facilities.push({ id: doc.id, ...doc.data() });
+        });
+
+        // Parse Allowed Facilities Rules if profile role is not global admin
+        let allowedList = [];
+        if (currentUser.role !== 'admin' && currentUser.allowedfacilities) {
+          allowedList = currentUser.allowedfacilities.split(',').map(item => item.trim().toLowerCase());
+        }
+
+        facilities.forEach(facility => {
+          const nameLower = facility.name ? facility.name.toLowerCase() : '';
+          
+          // Filtering logic evaluation
+          if (currentUser.role === 'admin' || allowedList.includes(nameLower)) {
+            
+            // Build the wrapping container shell
+            const wrapper = document.createElement('div');
+            wrapper.className = 'btn-facility-wrapper';
+
+            // Facility action button item
+            const btn = document.createElement('button');
+            btn.className = 'btn';
+            btn.textContent = facility.name || 'Unnamed Facility';
+            btn.addEventListener('click', () => openFacilityInfo(facility));
+
+            // Small immediate action deletion element
+            const delBtn = document.createElement('button');
+            delBtn.className = 'btn-delete';
+            delBtn.textContent = 'X';
+            delBtn.addEventListener('click', async (e) => {
+              e.stopPropagation();
+              if (confirm(`Are you sure you want to delete ${facility.name}?`)) {
+                await deleteDoc(doc(db, "Facility_Info", facility.id));
+                loadFacilityDashboard();
+              }
+            });
+
+            wrapper.appendChild(btn);
+            wrapper.appendChild(delBtn);
+            facilityButtonsContainer.appendChild(wrapper);
+          }
+        });
+      } catch (error) {
+        console.error("Error loading facilities: ", error);
+      }
+    }
+
+    // --- ADD NEW FACILITY POPUP WORKFLOWS ---
+    document.getElementById('btn-add-facility').addEventListener('click', () => {
+      addFacilityModal.classList.add('active');
+    });
+
+    document.getElementById('btn-modal-cancel').addEventListener('click', () => {
+      addFacilityModal.classList.remove('active');
+      newFacilityNameInput.value = '';
+    });
+
+    document.getElementById('btn-modal-submit').addEventListener('click', async () => {
+      const name = newFacilityNameInput.value.trim();
+      if (name) {
+        try {
+          await addDoc(collection(db, "Facility_Info"), {
+            name: name,
+            created_at: serverTimestamp()
+          });
+          addFacilityModal.classList.remove('active');
+          newFacilityNameInput.value = '';
+          loadFacilityDashboard();
+        } catch (error) {
+          console.error("Error adding facility: ", error);
+        }
+      }
+    });
+
+    // --- FACILITY INFORMATION DASHBOARD ROUTER ---
+    function openFacilityInfo(facility) {
+      currentFacility = facility;
+      selectedFacilityNameHeading.textContent = facility.name;
+      showView('view-facility-info');
+    }
+
+    // --- FORM VIEW CONTROL & SUBMISSIONS ---
+    window.openFormView = function(type) {
+      showView('view-forms');
+      
+      // Hide all standard sub-forms first
+      document.querySelectorAll('.sub-form').forEach(form => form.style.display = 'none');
+      
+      const titleElement = document.getElementById('form-view-title');
+      
+      if (type === 'employees') {
+        titleElement.textContent = "Employees Database Registry";
+        document.getElementById('form-employees').style.display = 'block';
+      } else if (type === 'maintenance') {
+        titleElement.textContent = "Log Facility Maintenance Profile";
+        document.getElementById('form-maintenance').style.display = 'block';
+      } else if (type === 'building') {
+        titleElement.textContent = "Building Parameter Configuration";
+        document.getElementById('form-building').style.display = 'block';
+      }
+    };
+
+    // Form Event Listener Submissions
+    document.getElementById('form-employees').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      try {
+        await addDoc(collection(db, "Employees"), {
+          employeeid: Number(formData.get('employeeid')),
+          employeename: formData.get('employeename'),
+          loginpin: formData.get('loginpin'),
+          role: formData.get('role'),
+          allowedfacilities: formData.get('allowedfacilities'),
+          active: "true"
+        });
+        alert('Employee added successfully!');
+        e.target.reset();
+        showView('view-facility-info');
+      } catch (err) { console.error(err); }
+    });
+
+    document.getElementById('form-maintenance').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      try {
+        await addDoc(collection(db, "Maintenaces_Info"), {
+          facilityId: currentFacility.id,
+          facilityName: currentFacility.name,
+          description: formData.get('description'),
+          priority: formData.get('priority'),
+          location: formData.get('location'),
+          timestamp: serverTimestamp()
+        });
+        alert('Maintenance log recorded!');
+        e.target.reset();
+        showView('view-facility-info');
+      } catch (err) { console.error(err); }
+    });
+
+    document.getElementById('form-building').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      try {
+        await addDoc(collection(db, "Building_Instructions"), {
+          facilityId: currentFacility.id,
+          facilityName: currentFacility.name,
+          title: formData.get('title'),
+          details: formData.get('details'),
+          timestamp: serverTimestamp()
+        });
+        alert('Building system instruction entry logged!');
+        e.target.reset();
+        showView('view-facility-info');
+      } catch (err) { console.error(err); }
+    });
+
+    // Expose helpers globally to support standard markup inline triggers
+    window.showView = showView;
+  </script>
 </body>
 </html>
