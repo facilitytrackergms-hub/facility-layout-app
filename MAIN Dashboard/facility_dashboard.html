@@ -92,7 +92,7 @@ function openFacilityDashboard(facilityId, facilityName) {
   if (!facilityId) return;
   sessionStorage.setItem("selectedFacilityId", facilityId);
   sessionStorage.setItem("selectedFacilityName", facilityName);
-  window.location.href = `MAIN Dashboard/facility_dashboard.html?facility=${facilityId}`;
+  window.location.href = `MAIN-Dashboard/facility_dashboard.html?facility=${facilityId}`;
 }
 
 function getPin() { return document.getElementById("loginInput").value.trim(); }
