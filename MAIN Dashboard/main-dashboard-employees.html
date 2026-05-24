@@ -57,12 +57,27 @@ async function loadFacilities() {
         opt.value = opt.innerText = f.facilityName;
         select.appendChild(opt);
     });
+
     select.onchange = () => {
         let selectedFacilityId = select.value;
         if (!selectedFacilityId) return;
+
+        // Check for valid PIN first
+        const userPIN = document.getElementById('pin').value || sessionStorage.getItem('userPIN');
+        if (!userPIN) {
+            alert('Please enter your PIN first.');
+            return;
+        }
+
+        // Store PIN if entered now
+        sessionStorage.setItem('userPIN', userPIN);
+
+        // Store facility info
         sessionStorage.setItem("selectedFacilityId", selectedFacilityId);
         sessionStorage.setItem("selectedFacilityName", select.options[select.selectedIndex].text);
-       window.location.href = `MAIN%20Dashboard/facility_dashboard.html?facility=${selectedFacilityId}`;
+
+        // Navigate to dashboard
+        window.location.href = `MAIN%20Dashboard/facility_dashboard.html?facility=${selectedFacilityId}`;
     };
 }
 
