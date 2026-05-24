@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MAIN Dashboard</title>
 <style>
-/* Original CSS unchanged */
+/* Keep all CSS unchanged */
 * { box-sizing: border-box; }
 body { margin:0; font-family:Arial,sans-serif; background:#f2f2f2; min-height:100vh; padding:10px; display:flex; justify-content:center; align-items:flex-start; }
 .app { width:100%; max-width:430px; background:#ffffff; border-radius:18px; padding:14px; box-shadow:0 4px 18px rgba(0,0,0,0.18); }
@@ -32,7 +32,6 @@ body { margin:0; font-family:Arial,sans-serif; background:#f2f2f2; min-height:10
 .version { margin-top:14px; text-align:center; font-size:11px; color:#777; }
 .facility-btn:active, .modal-btn:active { transform:scale(0.98); }
 </style>
-
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
@@ -70,13 +69,10 @@ const firebaseConfig = {
   appId: "1:765295196678:web:6112286c1bb33390e6a187",
   measurementId: "G-3XVCHEXPVX"
 };
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-
 let facilities = [];
 let employees = [];
-
 document.addEventListener("DOMContentLoaded", async () => {
   clearInputsOnLoad();
   await loadAppData();
@@ -87,16 +83,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   clearInputsOnLoad();
   document.getElementById("versionTimestamp").innerText = new Date().toLocaleString();
 });
-
 function clearInputsOnLoad() {
   document.getElementById("loginInput").value = '';
   document.getElementById("newFacilityInput").value = '';
 }
-
 async function loadAppData() {
   await Promise.all([loadFacilitiesFromFirebase(), loadEmployeesFromFirebase()]);
 }
-
 async function loadFacilitiesFromFirebase() {
   try {
     const snapshot = await db.collection("Facility_Info").get();
@@ -113,7 +106,6 @@ async function loadFacilitiesFromFirebase() {
   } catch(error) { console.error(error); showStatus("Could not load facilities database."); facilities = [];
   }
 }
-
 async function loadEmployeesFromFirebase() {
   try {
     const snapshot = await db.collection("Employees").get();
@@ -134,7 +126,6 @@ async function loadEmployeesFromFirebase() {
   } catch(error) { console.error(error); showStatus("Could not load employees database."); employees = [];
   }
 }
-
 function makeInitials(name) {
   const cleanName = String(name || "").trim();
   if (!cleanName) return "NEW";
@@ -144,7 +135,6 @@ function makeInitials(name) {
   if (words.length === 1) return words[0].substring(0,4).toUpperCase();
   return words.map(w => w[0]).join("").substring(0,4).toUpperCase();
 }
-
 function renderFacilityButtons() {
   const facilityList = document.getElementById("facilityList");
   const manageEmployeesButton = `<button class="facility-btn" onclick="openMainDashboardUsers()">Manage Employees<span class="facility-name">Users / Access</span></button>`;
@@ -152,16 +142,14 @@ function renderFacilityButtons() {
   const facilityButtons = facilities.map((facility,index) => `<button class="facility-btn" onclick="openFacilityView(${index})">${escapeHtml(facility.initials)}<span class="facility-name">${escapeHtml(facility.name)}</span></button>`).join("");
   facilityList.innerHTML = manageEmployeesButton + newFacilityButton + facilityButtons;
 }
-
 function openFacilityView(index) {
   const facility = facilities[index];
   if (!facility) return;
-  // Store selected facility info in session and navigate to Facility Info view
+  // Store selected facility info and open Facility Info page dynamically
   sessionStorage.setItem("selectedFacilityId", facility.id);
   sessionStorage.setItem("selectedFacilityName", facility.name);
-  window.location.href = "Facility_Info.html"; // Open Facility Info view
+  window.location.href = `Facility_Info.html?facilityId=${encodeURIComponent(facility.id)}&facilityName=${encodeURIComponent(facility.name)}`;
 }
-
 function getPin() { return document.getElementById("loginInput").value.trim(); }
 function getLoggedInEmployee() {
   const pin = getPin();
@@ -196,4 +184,3 @@ async function saveNewFacility(){
 </script>
 </body>
 </html>
-
