@@ -98,7 +98,8 @@ function openFacilityDashboard(facility) {
   sessionStorage.setItem("selectedFacilityId", facility.id);
   sessionStorage.setItem("selectedFacilityName", facility.name);
   // CORRECTED PATH: RELATIVE TO CURRENT FOLDER
-  window.location.href = `facility_dashboard.html?facility=${encodeURIComponent(facility.id)}`;
+  window.location.href =
+  `facility_dashboard.html?facility=${encodeURIComponent(facility.id)}&facilityName=${encodeURIComponent(facility.name)}`;
 }
 
 function promptPinForDelete(index){ selectedFacilityIndex=index; document.getElementById('pinPromptModal').classList.add('active'); document.getElementById('pinPromptInput').value=''; }
