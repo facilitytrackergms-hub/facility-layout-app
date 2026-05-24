@@ -74,40 +74,32 @@ const db = firebase.firestore();
 let facilities = [];
 let employees = [];
 let selectedFacilityIndex = null;
+
 document.addEventListener("DOMContentLoaded", async () => {
   clearInputsOnLoad();
   await loadAppData();
   renderFacilityButtons();
-  document.getElementById("newFacilityInput").addEventListener("keydown", event => {
-    if (event.key === "Enter") saveNewFacility();
-  });
+  document.getElementById("newFacilityInput").addEventListener("keydown", event => { if(event.key === "Enter") saveNewFacility(); });
   document.getElementById("versionTimestamp").innerText = new Date().toLocaleString();
 });
-function clearInputsOnLoad() { document.getElementById("loginInput").value = ''; document.getElementById("newFacilityInput").value = ''; }
+
+function clearInputsOnLoad() { document.getElementById("loginInput").value=''; document.getElementById("newFacilityInput").value=''; }
 async function loadAppData() { await Promise.all([loadFacilitiesFromFirebase(), loadEmployeesFromFirebase()]); }
-async function loadFacilitiesFromFirebase() { try { const snapshot = await db.collection("Facility_Info").get(); facilities = snapshot.docs.map(doc => ({ id: doc.data().facilityid||doc.data().id||'NEW', name: doc.data().facilityname||doc.data().name||'NEW', initials: makeInitials(doc.data().facilityname||doc.data().name), folder: doc.data().folder||(doc.data().facilityname?doc.data().facilityname.substring(0,4).toUpperCase():'NEW'), source: doc.data().source||'database' })); } catch(error) { console.error(error); showStatus("Could not load facilities database."); facilities = []; } }
-async function loadEmployeesFromFirebase() { try { const snapshot = await db.collection("Employees").get(); employees = snapshot.docs.map(doc => ({ employeename: doc.data().employeename||doc.data().employeename.toLowerCase(), loginpin: normalizePin(doc.data().loginpin), active: doc.data().active||"yes", adminaccess: doc.data().adminaccess||"no", viewemployees: doc.data().viewemployees||"no", viewmaindashboard: doc.data().viewmaindashboard||"no", viewfacilitydashboard: doc.data().viewfacilitydashboard||"no", role: doc.data().role||"user", allowedfacilities: doc.data().allowedfacilities||"" })); } catch(error) { console.error(error); showStatus("Could not load employees database."); employees = []; } }
-function makeInitials(name) { const cleanName = String(name||"").trim(); if(!cleanName) return "NEW"; if(cleanName.includes("/")) return cleanName.split("/")[0].replace(/[^a-zA-Z0-9]/g,"").substring(0,4).toUpperCase(); const words = cleanName.replace(/[^a-zA-Z0-9 ]/g," ").split(" ").filter(Boolean); if(!words.length) return "NEW"; if(words.length===1) return words[0].substring(0,4).toUpperCase(); return words.map(w=>w[0]).join("").substring(0,4).toUpperCase(); }
-function renderFacilityButtons() {
-  const facilityList = document.getElementById("facilityList");
-  facilityList.innerHTML = '';
-  facilities.forEach((facility,index)=>{
-    const container = document.createElement('div');
-    container.className='facility-btn-container';
-    const btn = document.createElement('button');
-    btn.className='facility-btn';
-    btn.textContent=facility.name;
-    btn.onclick=()=>openFacilityDashboard(facility);
-    const delBtn=document.createElement('button');
-    delBtn.className='delete-btn';
-    delBtn.textContent='X';
-    delBtn.onclick=()=>promptPinForDelete(index);
-    container.appendChild(btn);
-    container.appendChild(delBtn);
-    facilityList.appendChild(container);
-  });
+async function loadFacilitiesFromFirebase() { try { const snapshot = await db.collection("Facility_Info").get(); facilities = snapshot.docs.map(doc => ({ id: doc.data().facilityid||doc.data().id||'NEW', name: doc.data().facilityname||doc.data().name||'NEW', initials: makeInitials(doc.data().facilityname||doc.data().name), folder: doc.data().folder||(doc.data().facilityname?doc.data().facilityname.substring(0,4).toUpperCase():'NEW'), source: doc.data().source||'database' })); } catch(error){ console.error(error); showStatus("Could not load facilities database."); facilities=[]; } }
+async function loadEmployeesFromFirebase() { try { const snapshot = await db.collection("Employees").get(); employees = snapshot.docs.map(doc => ({ employeename: doc.data().employeename||doc.data().employeename.toLowerCase(), loginpin: normalizePin(doc.data().loginpin), active: doc.data().active||"yes", adminaccess: doc.data().adminaccess||"no", viewemployees: doc.data().viewemployees||"no", viewmaindashboard: doc.data().viewmaindashboard||"no", viewfacilitydashboard: doc.data().viewfacilitydashboard||"no", role: doc.data().role||"user", allowedfacilities: doc.data().allowedfacilities||"" })); } catch(error){ console.error(error); showStatus("Could not load employees database."); employees=[]; } }
+function makeInitials(name){ const cleanName=String(name||"").trim(); if(!cleanName) return "NEW"; if(cleanName.includes("/")) return cleanName.split("/")[0].replace(/[^a-zA-Z0-9]/g,"").substring(0,4).toUpperCase(); const words = cleanName.replace(/[^a-zA-Z0-9 ]/g," ").split(" ").filter(Boolean); if(!words.length) return "NEW"; if(words.length===1) return words[0].substring(0,4).toUpperCase(); return words.map(w=>w[0]).join("").substring(0,4).toUpperCase(); }
+function renderFacilityButtons(){ const facilityList=document.getElementById("facilityList"); facilityList.innerHTML=''; facilities.forEach((facility,index)=>{ const container=document.createElement('div'); container.className='facility-btn-container'; const btn=document.createElement('button'); btn.className='facility-btn'; btn.textContent=facility.name; btn.onclick=()=>openFacilityDashboard(facility); const delBtn=document.createElement('button'); delBtn.className='delete-btn'; delBtn.textContent='X'; delBtn.onclick=()=>promptPinForDelete(index); container.appendChild(btn); container.appendChild(delBtn); facilityList.appendChild(container); }); }
+
+// FIXED FUNCTION
+function openFacilityDashboard(facility) {
+  const userPIN = getPin() || sessionStorage.getItem('userPIN');
+  if(!userPIN){ showStatus("Enter PIN first."); return; }
+  sessionStorage.setItem('userPIN', userPIN);
+  sessionStorage.setItem("selectedFacilityId", facility.id);
+  sessionStorage.setItem("selectedFacilityName", facility.name);
+  window.location.href = `MAIN%20Dashboard/facility_dashboard.html?facility=${encodeURIComponent(facility.id)}`;
 }
-function openFacilityDashboard(facility) { sessionStorage.setItem("selectedFacilityId", facility.id); sessionStorage.setItem("selectedFacilityName", facility.name); window.location.href=`facility_dashboard.html?facility=${encodeURIComponent(facility.id)}`; }
+
 function promptPinForDelete(index){ selectedFacilityIndex=index; document.getElementById('pinPromptModal').classList.add('active'); document.getElementById('pinPromptInput').value=''; }
 function closePinPrompt(){ document.getElementById('pinPromptModal').classList.remove('active'); selectedFacilityIndex=null; }
 function confirmDeleteFacility(){ const pinInput=document.getElementById('pinPromptInput').value.trim(); if(pinInput==='1234' && selectedFacilityIndex!==null){ db.collection('Facility_Info').doc(facilities[selectedFacilityIndex].id).delete(); facilities.splice(selectedFacilityIndex,1); renderFacilityButtons(); closePinPrompt(); showStatus('Facility deleted.'); } else{ alert('Incorrect PIN'); } }
@@ -123,6 +115,3 @@ async function saveNewFacility(){ const input=document.getElementById("newFacili
 </script>
 </body>
 </html>
-
-
-
