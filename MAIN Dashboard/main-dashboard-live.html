@@ -62,4 +62,128 @@ body { margin:0; font-family:Arial,sans-serif; background:#f2f2f2; min-height:10
 </div>
 <script>
 const firebaseConfig = {
-  apiKey: "AIzaSyBDjQ6P5kO2N7QPChqS1t7VyJA_L
+  apiKey: "AIzaSyBDjQ6P5kO2N7QPChqS1t7VyJA_LZ7OCfQ",
+  authDomain: "facility-layout-app-builder.firebaseapp.com",
+  projectId: "facility-layout-app-builder",
+  storageBucket: "facility-layout-app-builder.firebasestorage.app",
+  messagingSenderId: "765295196678",
+  appId: "1:765295196678:web:6112286c1bb33390e6a187",
+  measurementId: "G-3XVCHEXPVX"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+let facilities = [];
+let employees = [];
+
+document.addEventListener("DOMContentLoaded", async () => {
+  clearInputsOnLoad();
+  await loadAppData();
+  renderFacilityButtons();
+  document.getElementById("newFacilityInput").addEventListener("keydown", event => {
+    if (event.key === "Enter") saveNewFacility();
+  });
+  clearInputsOnLoad();
+  document.getElementById("versionTimestamp").innerText = new Date().toLocaleString();
+});
+
+function clearInputsOnLoad() {
+  document.getElementById("loginInput").value = '';
+  document.getElementById("newFacilityInput").value = '';
+}
+
+async function loadAppData() {
+  await Promise.all([loadFacilitiesFromFirebase(), loadEmployeesFromFirebase()]);
+}
+
+async function loadFacilitiesFromFirebase() {
+  try {
+    const snapshot = await db.collection("Facility_Info").get();
+    facilities = snapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: data.facilityid || data.id || 'NEW',
+        name: data.facilityname || data.name || 'NEW',
+        initials: makeInitials(data.facilityname || data.name),
+        folder: data.folder || (data.facilityname ? data.facilityname.substring(0,4).toUpperCase() : 'NEW'),
+        source: data.source || 'database'
+      };
+    });
+  } catch(error) { console.error(error); showStatus("Could not load facilities database."); facilities = [];
+  }
+}
+
+async function loadEmployeesFromFirebase() {
+  try {
+    const snapshot = await db.collection("Employees").get();
+    employees = snapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        employeename: data.employeename || data.employeename.toLowerCase(),
+        loginpin: normalizePin(data.loginpin),
+        active: data.active || "yes",
+        adminaccess: data.adminaccess || "no",
+        viewemployees: data.viewemployees || "no",
+        viewmaindashboard: data.viewmaindashboard || "no",
+        viewfacilitydashboard: data.viewfacilitydashboard || "no",
+        role: data.role || "user",
+        allowedfacilities: data.allowedfacilities || ""
+      };
+    });
+  } catch(error) { console.error(error); showStatus("Could not load employees database."); employees = [];
+  }
+}
+
+function makeInitials(name) {
+  const cleanName = String(name || "").trim();
+  if (!cleanName) return "NEW";
+  if (cleanName.includes("/")) return cleanName.split("/")[0].replace(/[^a-zA-Z0-9]/g, "").substring(0,4).toUpperCase();
+  const words = cleanName.replace(/[^a-zA-Z0-9 ]/g," ").split(" ").filter(Boolean);
+  if (!words.length) return "NEW";
+  if (words.length === 1) return words[0].substring(0,4).toUpperCase();
+  return words.map(w => w[0]).join("").substring(0,4).toUpperCase();
+}
+
+function renderFacilityButtons() {
+  const facilityList = document.getElementById("facilityList");
+  const manageEmployeesButton = `<button class="facility-btn" onclick="openMainDashboardUsers()">Manage Employees<span class="facility-name">Users / Access</span></button>`;
+  const newFacilityButton = facilities.some(f => f.facilityname) ? '' : `<button class="facility-btn black-btn" onclick="openNewFacilityPopup()">+<span class="facility-name">Enter New Facility</span></button>`;
+  const facilityButtons = facilities.map((facility,index) => `<button class="facility-btn" onclick="openFacility(${index})">${escapeHtml(facility.initials)}<span class="facility-name">${escapeHtml(facility.name)}</span></button>`).join("");
+  facilityList.innerHTML = manageEmployeesButton + newFacilityButton + facilityButtons;
+}
+
+function getPin() { return document.getElementById("loginInput").value.trim(); }
+function getLoggedInEmployee() {
+  const pin = getPin();
+  if (!pin) { showStatus("Enter PIN first."); return null; }
+  return employees.find(emp => normalizePin(emp.loginpin) === normalizePin(pin) && emp.active !== "no");
+}
+function openMainDashboardUsers() {
+  const employee = getLoggedInEmployee();
+  if (!employee) return;
+  sessionStorage.setItem("loggedInEmployeeName", employee.employeename);
+  sessionStorage.setItem("loggedInEmployeeRole", employee.role);
+  window.location.href = "main-dashboard-employees.html";
+}
+function normalizePin(value) { return String(value || "").replace(/\.0$/, "").replace(/[^0-9]/g, ""); }
+function showStatus(msg) { const s = document.getElementById("statusBox"); s.innerText = msg; s.classList.add("active"); setTimeout(()=>s.classList.remove("active"),3000); }
+function escapeHtml(value) { return String(value||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
+function openNewFacilityPopup(){document.getElementById("newFacilityModal").classList.add("active");}
+function closeNewFacilityPopup(){document.getElementById("newFacilityModal").classList.remove("active");}
+async function saveNewFacility(){
+  const input = document.getElementById("newFacilityInput");
+  const facilityName = input.value.trim();
+  if(!facilityName){showStatus("Enter a facility name first."); return;}
+  const initials = facilityName.substring(0,4).toUpperCase();
+  if(facilities.some(f=>f.name.toLowerCase()===facilityName.toLowerCase())){showStatus("That facility already exists."); return;}
+  const newFacility={id:initials,name:facilityName,initials:initials,source:'local'};
+  await db.collection("Facility_Info").doc(initials).set(newFacility);
+  facilities.push(newFacility);
+  renderFacilityButtons();
+  closeNewFacilityPopup();
+  showStatus("Facility saved.");
+}
+</script>
+</body>
+</html>
