@@ -14,33 +14,25 @@
   .btn-black { background:#000; color:#fff; }
   .btn-yellow { background:#ffbf00; color:#000; }
   .btn-red { background:#d9534f; color:#fff; }
-  
-  /* Modal Logic */
   .modal { display:none; position:fixed; z-index:100; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; }
   .modal-content { background:white; padding:20px; border-radius:12px; width:90%; max-width:400px; }
-  
   .employee-list { width:100%; max-width:460px; display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
   .emp-btn { background:#fff; border:1px solid #ddd; padding:12px; border-radius:8px; font-size:13px; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.05); }
 </style>
 </head>
 <body>
-
 <div class="card">
   <button class="btn-black" onclick="window.history.back()">← Back</button>
   <h2 style="text-align:center">Employee Management</h2>
   <p style="font-size:12px; text-align:center; color:#666;">Enter info below to add new, or click a button below to edit/delete.</p>
-  
   <div class="form-group"><label>Employee Name</label><input type="text" id="employeeName"></div>
   <div class="form-group"><label>PIN</label><input type="text" id="pin"></div>
   <div class="form-group"><label>Role</label><select id="role"><option value="">-- Select --</option><option value="Admin">Admin</option><option value="Staff">Staff</option></select></div>
   <div class="form-group"><label>Facility Access</label><select id="facilityAccess"><option value="">Loading...</option></select></div>
-  
   <button class="btn-yellow" id="saveBtn">Save New Employee</button>
 </div>
-
 <h3>Current Staff List</h3>
 <div id="employeeButtons" class="employee-list"></div>
-
 <div id="editModal" class="modal">
   <div class="modal-content">
     <h3 id="modalTitle" style="margin-top:0">Edit Employee</h3>
@@ -50,40 +42,45 @@
     <button class="btn-black" onclick="closeModal()">Cancel</button>
   </div>
 </div>
-
 <script>
-  const API_URL = 'https://script.google.com/macros/s/AKfycbxED09ipDUCOfwmNPVMkoEDDzDW5O7s0ObV9kStTWNoJQiswnAjfpIUqcdt531n0XxUiA/exec';
-  let selectedEmp = null;
+const API_URL = 'https://script.google.com/macros/s/AKfycbxED09ipDUCOfwmNPVMkoEDDzDW5O7s0ObV9kStTWNoJQiswnAjfpIUqcdt531n0XxUiA/exec';
+let selectedEmp = null;
+window.onload = () => { loadFacilities(); loadEmployees(); };
 
-  window.onload = () => { loadFacilities(); loadEmployees(); };
-
-  async function loadFacilities() {
+async function loadFacilities() {
     const resp = await fetch(API_URL + '?sheet=Facility_Info');
     const facilities = await resp.json();
     const select = document.getElementById('facilityAccess');
     select.innerHTML = '<option value="">-- Select Facility --</option>';
     facilities.forEach(f => {
-      let opt = document.createElement('option');
-      opt.value = opt.innerText = f.facilityName;
-      select.appendChild(opt);
+        let opt = document.createElement('option');
+        opt.value = opt.innerText = f.facilityName;
+        select.appendChild(opt);
     });
-  }
+    select.onchange = () => {
+        let selectedFacilityId = select.value;
+        if (!selectedFacilityId) return;
+        sessionStorage.setItem("selectedFacilityId", selectedFacilityId);
+        sessionStorage.setItem("selectedFacilityName", select.options[select.selectedIndex].text);
+        window.location.href = `MAIN-Dashboard/facility_dashboard.html?facility=${selectedFacilityId}`;
+    };
+}
 
-  async function loadEmployees() {
+async function loadEmployees() {
     const resp = await fetch(API_URL + '?sheet=Employees');
     const data = await resp.json();
     const container = document.getElementById('employeeButtons');
     container.innerHTML = '';
     data.forEach(emp => {
-      let btn = document.createElement('button');
-      btn.className = 'emp-btn';
-      btn.innerText = emp.employeeName;
-      btn.onclick = () => openModal(emp);
-      container.appendChild(btn);
+        let btn = document.createElement('button');
+        btn.className = 'emp-btn';
+        btn.innerText = emp.employeeName;
+        btn.onclick = () => openModal(emp);
+        container.appendChild(btn);
     });
-  }
+}
 
-  function openModal(emp) {
+function openModal(emp) {
     selectedEmp = emp;
     document.getElementById('modalTitle').innerText = "Manage: " + emp.employeeName;
     document.getElementById('modalBody').innerHTML = `
@@ -92,34 +89,28 @@
       <p><b>PIN:</b> ${emp.loginPin}</p>
     `;
     document.getElementById('editModal').style.display = 'flex';
-  }
+}
 
-  function closeModal() { document.getElementById('editModal').style.display = 'none'; }
+function closeModal() { document.getElementById('editModal').style.display = 'none'; }
 
-  // DELETE LOGIC
-  document.getElementById('modalDeleteBtn').onclick = async () => {
+document.getElementById('modalDeleteBtn').onclick = async () => {
     if(!confirm("Are you sure you want to delete this employee?")) return;
-    await fetch(API_URL, {
-      method: 'POST',
-      body: JSON.stringify({ sheet: "Employees", action: "delete", data: { employeeName: selectedEmp.employeeName }})
-    });
+    await fetch(API_URL, { method: 'POST', body: JSON.stringify({ sheet: "Employees", action: "delete", data: { employeeName: selectedEmp.employeeName }}) });
     alert("Deleted");
     closeModal();
     loadEmployees();
-  };
+};
 
-  // UPDATE LOGIC (Loads info back into main form to edit)
-  document.getElementById('modalUpdateBtn').onclick = () => {
+document.getElementById('modalUpdateBtn').onclick = () => {
     document.getElementById('employeeName').value = selectedEmp.employeeName;
     document.getElementById('pin').value = selectedEmp.loginPin;
     document.getElementById('role').value = selectedEmp.role || '';
     document.getElementById('facilityAccess').value = selectedEmp.allowedFacilities || '';
     closeModal();
     window.scrollTo({top:0, behavior:'smooth'});
-  };
+};
 
-  // SAVE/ADD LOGIC
-  document.getElementById('saveBtn').onclick = async () => {
+document.getElementById('saveBtn').onclick = async () => {
     const payload = {
       sheet: "Employees",
       action: "save",
@@ -133,7 +124,7 @@
     await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
     alert("Saved!");
     loadEmployees();
-  };
+};
 </script>
 </body>
 </html>
