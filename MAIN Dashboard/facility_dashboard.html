@@ -3,39 +3,137 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Facility Dashboard</title>
+<title>MAIN Dashboard</title>
 <style>
-  body { font-family: Arial, sans-serif; margin: 20px; }
-  h1 { text-align: center; }
-  .tool-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px; }
-  .tool-buttons button { padding: 15px 25px; border-radius: 8px; border: none; background-color: #ffc107; cursor: pointer; font-weight: bold; }
-  #toolContainer { margin-top: 30px; }
+/* Keep existing CSS unchanged */
+* { box-sizing: border-box; }
+body { margin:0; font-family:Arial,sans-serif; background:#f2f2f2; min-height:100vh; padding:10px; display:flex; justify-content:center; align-items:flex-start; }
+.app { width:100%; max-width:430px; background:#ffffff; border-radius:18px; padding:14px; box-shadow:0 4px 18px rgba(0,0,0,0.18); }
+.title { font-size:23px; font-weight:900; margin:0; text-align:center; line-height:1.1; }
+.tag { text-align:center; font-size:12px; font-weight:700; color:#555; margin-top:5px; margin-bottom:14px; }
+.card-box { border:2px dashed #d2d2d2; border-radius:16px; background:#fafafa; padding:12px; margin-bottom:12px; }
+.box-title { font-size:17px; font-weight:900; text-align:center; margin-bottom:10px; color:#111; }
+.input { width:100%; border:1px solid #bbb; border-radius:12px; padding:12px; font-size:16px; font-weight:700; outline:none; margin-bottom:8px; background:white; }
+.facility-list { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-top:10px; }
+.facility-btn-container { position:relative; }
+.facility-btn { width:100%; border:none; background:#f4c542; color:#111; border-radius:14px; padding:16px 10px; font-size:17px; font-weight:900; cursor:pointer; box-shadow:0 3px 8px rgba(0,0,0,0.18); text-align:center; min-height:74px; }
+.delete-btn { position:absolute; bottom:5px; right:5px; padding:5px 8px; font-size:12px; background:red; color:white; border:none; border-radius:6px; cursor:pointer; }
+.facility-name { display:block; font-size:10px; font-weight:800; margin-top:5px; color:#333; line-height:1.1; }
+.status { display:none; margin-top:8px; padding:10px; border-radius:12px; background:#eeeeee; font-size:13px; font-weight:800; text-align:center; color:#333; }
+.status.active { display:block; }
+.modal-backdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); padding:16px; align-items:center; justify-content:center; z-index:99; }
+.modal-backdrop.active { display:flex; }
+.modal-card { width:100%; max-width:390px; background:white; border-radius:18px; padding:14px; box-shadow:0 5px 22px rgba(0,0,0,0.28); }
+.modal-title { font-size:20px; font-weight:900; text-align:center; margin-bottom:12px; }
+.modal-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px; }
+.modal-btn { border:none; border-radius:12px; padding:12px; font-size:16px; font-weight:900; cursor:pointer; }
+.save-btn { background:#f4c542; color:#111; }
+.cancel-btn { background:#222; color:#fff; }
+.version { margin-top:14px; text-align:center; font-size:11px; color:#777; }
+.facility-btn:active, .modal-btn:active, .delete-btn:active { transform:scale(0.98); }
+.top-buttons { display:flex; justify-content:space-between; margin-bottom:12px; gap:8px; }
+.top-buttons button { flex:1; padding:12px; font-weight:900; border:none; border-radius:12px; cursor:pointer; font-size:14px; color:white; }
+.add-facility { background:black; }
+.manage-employees { background:#f4c542; color:#111; }
 </style>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
-
-<h1 id="facilityName"></h1>
-
-<div class="tool-buttons">
-    <button onclick="loadTool('ED_Info.html')">E.D Info</button>
-    <button onclick="loadTool('Maintenances_Info.html')">Maintenance Info</button>
-    <!-- Add more tool buttons as needed -->
+<main class="app">
+<h1 class="title">MAIN Dashboard</h1>
+<div class="tag">Facility Layout App</div>
+<div class="top-buttons">
+<button class="manage-employees" onclick="openMainDashboardUsers()">Manage Employees</button>
+<button class="add-facility" onclick="openNewFacilityPopup()">Enter New Facility</button>
 </div>
-
-<div id="toolContainer"></div>
-
+<section class="card-box">
+<div class="box-title">Enter PIN</div>
+<input id="loginInput" class="input" type="password" placeholder="Enter PIN" maxlength="4" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4);">
+<div id="statusBox" class="status"></div>
+</section>
+<section id="facilityList" class="facility-list"></section>
+<div class="version">Updated: <span id="versionTimestamp"></span> • MAIN Dashboard/main-dashboard-live.html</div>
+</main>
+<div id="newFacilityModal" class="modal-backdrop">
+<div class="modal-card">
+<div class="modal-title">Enter New Facility</div>
+<input id="newFacilityInput" class="input" type="text" placeholder="Enter new facility name">
+<div class="modal-actions">
+<button class="modal-btn cancel-btn" onclick="closeNewFacilityPopup()">Cancel</button>
+<button class="modal-btn save-btn" onclick="saveNewFacility()">Save</button>
+</div>
+</div>
+</div>
+<div id="pinPromptModal" class="modal-backdrop">
+<div class="modal-card">
+<div class="modal-title">Enter PIN to Delete Facility</div>
+<input id="pinPromptInput" class="input" type="password" placeholder="Enter PIN" maxlength="4">
+<div class="modal-actions">
+<button class="modal-btn cancel-btn" onclick="closePinPrompt()">Cancel</button>
+<button class="modal-btn save-btn" onclick="confirmDeleteFacility()">Confirm</button>
+</div>
+</div>
+</div>
 <script>
-// Read the facility ID from the URL
-const params = new URLSearchParams(window.location.search);
-const facilityId = params.get('facility');
-document.getElementById('facilityName').textContent = facilityId ? `Facility Dashboard: ${facilityId}` : 'Facility Dashboard';
-
-// Load the selected tool into the container (iframe or AJAX)
-function loadTool(page) {
-    const container = document.getElementById('toolContainer');
-    container.innerHTML = `<iframe src="${page}" style="width:100%; height:500px; border:none;"></iframe>`;
+const firebaseConfig = { apiKey: "AIzaSyBDjQ6P5kO2N7QPChqS1t7VyJA_LZ7OCfQ", authDomain: "facility-layout-app-builder.firebaseapp.com", projectId: "facility-layout-app-builder", storageBucket: "facility-layout-app-builder.firebasestorage.app", messagingSenderId: "765295196678", appId: "1:765295196678:web:6112286c1bb33390e6a187", measurementId: "G-3XVCHEXPVX" };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+let facilities = [];
+let employees = [];
+let selectedFacilityIndex = null;
+document.addEventListener("DOMContentLoaded", async () => {
+  clearInputsOnLoad();
+  await loadAppData();
+  renderFacilityButtons();
+  document.getElementById("newFacilityInput").addEventListener("keydown", event => {
+    if (event.key === "Enter") saveNewFacility();
+  });
+  document.getElementById("versionTimestamp").innerText = new Date().toLocaleString();
+});
+function clearInputsOnLoad() { document.getElementById("loginInput").value = ''; document.getElementById("newFacilityInput").value = ''; }
+async function loadAppData() { await Promise.all([loadFacilitiesFromFirebase(), loadEmployeesFromFirebase()]); }
+async function loadFacilitiesFromFirebase() { try { const snapshot = await db.collection("Facility_Info").get(); facilities = snapshot.docs.map(doc => ({ id: doc.data().facilityid||doc.data().id||'NEW', name: doc.data().facilityname||doc.data().name||'NEW', initials: makeInitials(doc.data().facilityname||doc.data().name), folder: doc.data().folder||(doc.data().facilityname?doc.data().facilityname.substring(0,4).toUpperCase():'NEW'), source: doc.data().source||'database' })); } catch(error) { console.error(error); showStatus("Could not load facilities database."); facilities = []; } }
+async function loadEmployeesFromFirebase() { try { const snapshot = await db.collection("Employees").get(); employees = snapshot.docs.map(doc => ({ employeename: doc.data().employeename||doc.data().employeename.toLowerCase(), loginpin: normalizePin(doc.data().loginpin), active: doc.data().active||"yes", adminaccess: doc.data().adminaccess||"no", viewemployees: doc.data().viewemployees||"no", viewmaindashboard: doc.data().viewmaindashboard||"no", viewfacilitydashboard: doc.data().viewfacilitydashboard||"no", role: doc.data().role||"user", allowedfacilities: doc.data().allowedfacilities||"" })); } catch(error) { console.error(error); showStatus("Could not load employees database."); employees = []; } }
+function makeInitials(name) { const cleanName = String(name||"").trim(); if(!cleanName) return "NEW"; if(cleanName.includes("/")) return cleanName.split("/")[0].replace(/[^a-zA-Z0-9]/g,"").substring(0,4).toUpperCase(); const words = cleanName.replace(/[^a-zA-Z0-9 ]/g," ").split(" ").filter(Boolean); if(!words.length) return "NEW"; if(words.length===1) return words[0].substring(0,4).toUpperCase(); return words.map(w=>w[0]).join("").substring(0,4).toUpperCase(); }
+function renderFacilityButtons() {
+  const facilityList = document.getElementById("facilityList");
+  facilityList.innerHTML = '';
+  facilities.forEach((facility,index)=>{
+    const container = document.createElement('div');
+    container.className='facility-btn-container';
+    const btn = document.createElement('button');
+    btn.className='facility-btn';
+    btn.textContent=facility.name;
+    btn.onclick=()=>openFacilityDashboard(facility.id, facility.name);
+    const delBtn=document.createElement('button');
+    delBtn.className='delete-btn';
+    delBtn.textContent='X';
+    delBtn.onclick=()=>promptPinForDelete(index);
+    container.appendChild(btn);
+    container.appendChild(delBtn);
+    facilityList.appendChild(container);
+  });
 }
+function openFacilityDashboard(facilityId, facilityName) {
+  if(!facilityId) return;
+  sessionStorage.setItem("selectedFacilityId", facilityId);
+  sessionStorage.setItem("selectedFacilityName", facilityName);
+  window.location.href=`facility_dashboard.html?facility=${encodeURIComponent(facilityId)}`;
+}
+function promptPinForDelete(index){ selectedFacilityIndex=index; document.getElementById('pinPromptModal').classList.add('active'); document.getElementById('pinPromptInput').value=''; }
+function closePinPrompt(){ document.getElementById('pinPromptModal').classList.remove('active'); selectedFacilityIndex=null; }
+function confirmDeleteFacility(){ const pinInput=document.getElementById('pinPromptInput').value.trim(); if(pinInput==='1234' && selectedFacilityIndex!==null){ db.collection('Facility_Info').doc(facilities[selectedFacilityIndex].id).delete(); facilities.splice(selectedFacilityIndex,1); renderFacilityButtons(); closePinPrompt(); showStatus('Facility deleted.'); } else{ alert('Incorrect PIN'); } }
+function getPin(){ return document.getElementById("loginInput").value.trim(); }
+function getLoggedInEmployee(){ const pin=getPin(); if(!pin){ showStatus("Enter PIN first."); return null; } return employees.find(emp=>normalizePin(emp.loginpin)===normalizePin(pin)&&emp.active!=='no'); }
+function openMainDashboardUsers(){ const employee=getLoggedInEmployee(); if(!employee) return; sessionStorage.setItem("loggedInEmployeeName",employee.employeename); sessionStorage.setItem("loggedInEmployeeRole",employee.role); window.location.href="main-dashboard-employees.html"; }
+function normalizePin(value){ return String(value||"").replace(/\.0$/,'').replace(/[^0-9]/g,''); }
+function showStatus(msg){ const s=document.getElementById("statusBox"); s.innerText=msg; s.classList.add("active"); setTimeout(()=>s.classList.remove("active"),3000); }
+function escapeHtml(value){ return String(value||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
+function openNewFacilityPopup(){ document.getElementById("newFacilityModal").classList.add("active"); }
+function closeNewFacilityPopup(){ document.getElementById("newFacilityModal").classList.remove("active"); }
+async function saveNewFacility(){ const input=document.getElementById("newFacilityInput"); const facilityName=input.value.trim(); if(!facilityName){ showStatus("Enter a facility name first."); return; } const initials=facilityName.substring(0,4).toUpperCase(); if(facilities.some(f=>f.name.toLowerCase()===facilityName.toLowerCase())){ showStatus("That facility already exists."); return; } const newFacility={id:initials,name:facilityName,initials:initials,source:'local'}; await db.collection("Facility_Info").doc(initials).set(newFacility); facilities.push(newFacility); renderFacilityButtons(); closeNewFacilityPopup(); showStatus("Facility saved."); }
 </script>
-
 </body>
 </html>
+
