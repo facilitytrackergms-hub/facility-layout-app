@@ -62,7 +62,7 @@ async function loadFacilities() {
         if (!selectedFacilityId) return;
         sessionStorage.setItem("selectedFacilityId", selectedFacilityId);
         sessionStorage.setItem("selectedFacilityName", select.options[select.selectedIndex].text);
-        window.location.href = `MAIN-Dashboard/facility_dashboard.html?facility=${selectedFacilityId}`;
+       window.location.href = `MAIN%20Dashboard/facility_dashboard.html?facility=${selectedFacilityId}`;
     };
 }
 
