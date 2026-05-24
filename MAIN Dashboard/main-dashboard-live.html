@@ -148,9 +148,18 @@ function makeInitials(name) {
 function renderFacilityButtons() {
   const facilityList = document.getElementById("facilityList");
   const manageEmployeesButton = `<button class="facility-btn" onclick="openMainDashboardUsers()">Manage Employees<span class="facility-name">Users / Access</span></button>`;
-  const newFacilityButton = facilities.some(f => f.facilityname) ? '' : `<button class="facility-btn black-btn" onclick="openNewFacilityPopup()">+<span class="facility-name">Enter New Facility</span></button>`;
-  const facilityButtons = facilities.map((facility,index) => `<button class="facility-btn" onclick="openFacility(${index})">${escapeHtml(facility.initials)}<span class="facility-name">${escapeHtml(facility.name)}</span></button>`).join("");
+  const newFacilityButton = `<button class="facility-btn black-btn" onclick="openNewFacilityPopup()">+<span class="facility-name">Enter New Facility</span></button>`;
+  const facilityButtons = facilities.map((facility,index) => `<button class="facility-btn" onclick="openFacilityView(${index})">${escapeHtml(facility.initials)}<span class="facility-name">${escapeHtml(facility.name)}</span></button>`).join("");
   facilityList.innerHTML = manageEmployeesButton + newFacilityButton + facilityButtons;
+}
+
+function openFacilityView(index) {
+  const facility = facilities[index];
+  if (!facility) return;
+  // Store selected facility info in session and navigate to Facility Info view
+  sessionStorage.setItem("selectedFacilityId", facility.id);
+  sessionStorage.setItem("selectedFacilityName", facility.name);
+  window.location.href = "Facility_Info.html"; // Open Facility Info view
 }
 
 function getPin() { return document.getElementById("loginInput").value.trim(); }
