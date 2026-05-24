@@ -135,7 +135,7 @@
 
     async function loadFacilitiesFromFirebase() {
       try {
-        const snapshot = await db.collection("facilities").get();
+        const snapshot = await db.collection("Facility_Info").get();
         facilities = [];
         snapshot.forEach(doc => {
           const data = doc.data();
@@ -149,7 +149,7 @@
 
     async function loadEmployeesFromFirebase() {
       try {
-        const snapshot = await db.collection("employees").get();
+        const snapshot = await db.collection("Employees").get();
         employees = [];
         snapshot.forEach(doc => {
           const data = doc.data();
